@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "cache": "deno cache app/deps.ts app/main.ts",
+    "dev": "deno run --allow-net app/main.ts",
+    "docker": "docker build -t donations-api . && docker run -it --init -p 8001:8001 donations-api"
+  }
+}
