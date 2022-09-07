@@ -8,8 +8,7 @@ default:
 
 variables:
   API_DOMAIN_PATH: "$CI_PROJECT_DIR/api_domain"
-
-# TODO(SF) cache configuration?
+  # DENO_DIR: "$CI_PROJECT_DIR/.cache/deno" # TODO(SF) does this make sense?
 
 # job templates
 
@@ -48,12 +47,15 @@ variables:
 
 ## common steps
 
+
 cache_lint_test:
-  image: 'denoland/deno:1.25.1'
+  image: 'denoland/deno:alpine-1.25.1'
   stage: 'test'
   script:
-    - deno task cache
-    - deno lint # TODO(SF) does this actually make the pipeline fail?
+    # TODO(SF) make sure to use DENO_DIR env
+    - deno task install
+    - deno fmt --check
+    - deno lint
     - echo "execute tests here" # TODO(SF)
 
 # TODO(SF) use this in frontend as well?

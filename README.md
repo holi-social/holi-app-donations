@@ -1,7 +1,6 @@
 # Holi Donations
 
-TODO(SF): rename repo to donations-api
-or app prefix?
+TODO(SF): rename repo to donations-api or app prefix?
 
 ## Getting started
 
@@ -11,25 +10,40 @@ Install [`deno`](https://github.com/denoland/deno_install)
 
 ## Code style
 
-`deno lint`
+Linting: `deno lint`
 
-`deno fmt`
+Formatting: `deno fmt`
 
-`deno cache deps.ts`
+Configuration can be added in `deno.json`
+https://deno.land/manual/typescript/configuration
+https://deno.land/manual/tools/linter https://deno.land/manual/tools/formatter
 
 More tooling see https://deno.land/manual/tools
 
-TODO(SF):: mention deno tasks if kept
+## Dependencies
+
+Add all dependencies to `app/deps.ts` (similiar as you would do in a Node.js
+`package.json`). After adding a dependency run `deno task updateDeps` to update
+the `lock.json` file (similiar to Node.js `package.lock` including hashes).
+
+To just install and cache dependencies locally, run `deno task install`.
 
 ## Execute locally
 
-deno run --allow-net app/main.ts
+Optional: Run `deno task cache` to cache the main application for quicker
+execution.
 
-Access graphql UI
+Run `deno task start` to execute the application locally.
+
+Afterwards you can access the graphql UI here:
 
 http://localhost:8001/graphql
 
-$ docker build -t donations-api . && docker run -it --init -p 8001:8001 donations-api
+## Execute locally using docker
+
+```sh
+docker build -t donations-api . && docker run -it --init -p 8001:8001 donations-api
+```
 
 ## VS Code extension
 
@@ -39,12 +53,10 @@ run `Deno: Initialize Workspace Configuration` command (or enable manually)
 
 ## TOODs
 
-TODO: testing
+TODO: testing https://deno.land/manual/testing
 
 TODO: fix version? version manager necessary? e.g
 https://github.com/justjavac/dvm
-
-TODO: cache deps more permanently?
 
 TODO: terraform
 
@@ -55,4 +67,9 @@ TODO: sentry
 TODO: authorization (unified-api > .meshrc.yml)
 
 TODO: e2e tests?
+
 TODO: mention noenv for ci
+
+TODO: build binary and copy to docker container?
+https://deno.land/manual/tools/compiler deno compile --allow-net
+--lock=lock.json --cached-only --output=donations-api app/main.ts
