@@ -73,3 +73,13 @@ TODO: mention noenv for ci
 TODO: build binary and copy to docker container?
 https://deno.land/manual/tools/compiler deno compile --allow-net
 --lock=lock.json --cached-only --output=donations-api app/main.ts
+
+TODO: use other lib for http? std/http, tinyhttp or Opine
+https://deno.land/x/gql@1.1.2
+
+TODO: use oak for server? https://deno.land/x/oak/mod.ts
+
+TODO: use velociraptor for scripts?
+https://deno.land/x/velociraptor@1.0.0-beta.16
+
+TODO: logging https://deno.land/x/deno_util/logger.ts
