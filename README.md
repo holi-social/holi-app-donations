@@ -1,77 +1,130 @@
 # Holi App Donations
 
+The backend for handling donation projects, including a GraphQL API for [betterplace](https://www.betterplace.org).
+
+<!-- TOC -->
+- [Holi App Donations](#holi-app-donations)
+  - [Getting started](#getting-started)
+    - [Setup](#setup)
+    - [Code style](#code-style)
+    - [Dependencies](#dependencies)
+    - [Tasks](#tasks)
+    - [VS Code extension](#vs-code-extension)
+  - [Local execution](#local-execution)
+  - [Continuous Integration and Deployment](#continuous-integration-and-deployment)
+    - [Skipping parts of CI](#skipping-parts-of-ci)
+      - [noenv Branches](#noenv-branches)
+  - [TODOs](#todos)
+<!-- /TOC -->
+
 ## Getting started
 
-### Deno
+### Setup
 
-Install [`deno`](https://github.com/denoland/deno_install)
+Install [`deno`](https://github.com/denoland/deno_install).
 
-## Code style
+TODO: specify version? (currently 1.25.1)
 
-Linting: `deno lint`
+TODO: use version manager? e.g [dvm](https://github.com/justjavac/dvm)
 
-Formatting: `deno fmt`
+### Code style
 
-Configuration can be added in `deno.json`
-https://deno.land/manual/typescript/configuration
-https://deno.land/manual/tools/linter https://deno.land/manual/tools/formatter
+Linting:
 
-More tooling see https://deno.land/manual/tools
+```sh
+deno lint
+```
 
-## Dependencies
+Formatting:
 
-Add all dependencies to `app/deps.ts` (similiar as you would do in a Node.js
-`package.json`). After adding a dependency run `deno task updateDeps` to update
-the `lock.json` file (similiar to Node.js `package.lock` including hashes).
+```sh
+deno fmt
+```
 
-To just install and cache dependencies locally, run `deno task install`.
+Configuration for [typescript](https://deno.land/manual/typescript/configuration), [linter](https://deno.land/manual/tools/linter) or [formatter](https://deno.land/manual/tools/formatter) can be added in `deno.json`.
 
-## Execute locally
+See the [deno manual](https://deno.land/manual/tools) for more tools.
 
-Optional: Run `deno task cache` to cache the main application for quicker
-execution.
+### Dependencies
 
-Run `deno task start` to execute the application locally.
+All dependencies should be added in `app/deps.ts` (similiar as you would do in a Node.js
+`package.json`) for caching and integrity checks. After adding a dependency run
 
-Afterwards you can access the graphql UI here:
+```sh
+deno task updateDeps
+```
 
-http://localhost:8001/graphql
+to update the `lock.json` file (similiar to Node.js `package.lock` including hashes).
 
-## Execute locally using docker
+To just install and cache dependencies locally, run
+
+```sh
+deno task install
+```
+
+TODO: use [vendoring](https://deno.land/manual/tools/vendor)?
+
+### Tasks
+
+Currently we are using `deno task` for execution of scripts that are defined in `deno.json` (similiar to scripts defined in Node.js `package.json`). Beware that this is declared "unstable and may drastically change in the future" (see [documentation](https://deno.land/manual/tools/task_runner)).
+
+TODO: use [Velocirator](https://velociraptor.run/) instead?
+
+### VS Code extension
+
+There is an official VS Code extension for Deno: [vscode-deno](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
+
+After installation it is necessary to enable Deno for the workspace, e.g. by running the command `Deno: Initialize Workspace Configuration`.
+For more information check the [documentation](https://deno.land/manual/vscode_deno).
+
+## Local execution
+
+Optional: Cache the main application for quicker execution:
+
+```sh
+deno task cache
+```
+
+Run
+
+```sh
+deno task start
+```
+
+to execute the application locally or
 
 ```sh
 deno task docker
 ```
 
-## VS Code extension
+to execute the application in a local docker container.
 
-https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno
+Afterwards you can access the graphql UI here:
 
-run `Deno: Initialize Workspace Configuration` command (or enable manually)
+`http://localhost:8001/graphql`
 
-## TOODs
+## Continuous Integration and Deployment
 
-TODO: testing https://deno.land/manual/testing
+### Skipping parts of CI
 
-TODO: fix version? version manager necessary? e.g
-https://github.com/justjavac/dvm
+Sometimes, changes don't need to be verified by the full pipeline, e.g. changes in linting or documentation.
+
+#### noenv Branches
+
+When you prefix your branch name with `noenv/` (e.g. `noenv/my-readme-update`) the pipeline only lints & builds, but does not publish, deploy or run e2e test. This saves quite some time. Obviously, many things go untested so only use this if "you know what you're doing".
+
+## TODOs
+
+TODO: [testing](https://deno.land/manual/testing)
+
+TODO: [logging](https://deno.land/x/deno_util/logger.ts)
 
 TODO: sentry
 
-TODO: e2e tests?
-
-TODO: mention noenv for ci
-
-TODO: build binary and copy to docker container?
-https://deno.land/manual/tools/compiler deno compile --allow-net
---lock=lock.json --cached-only --output=donations-api app/main.ts
+TODO: [build binary](https://deno.land/manual/tools/compiler) and copy to docker container?
+`deno compile --allow-net --lock=lock.json --cached-only --output=donations-api app/main.ts`
 
 TODO: use other lib for http? std/http, tinyhttp or Opine
-https://deno.land/x/gql@1.1.2
+[gql examples](https://deno.land/x/gql@1.1.2)
 
-TODO: use oak for server? https://deno.land/x/oak/mod.ts
-
-TODO: use velociraptor for scripts?
-https://deno.land/x/velociraptor@1.0.0-beta.16
-
-TODO: logging https://deno.land/x/deno_util/logger.ts
+TODO: use [oak](https://deno.land/x/oak/mod.ts) for server?
