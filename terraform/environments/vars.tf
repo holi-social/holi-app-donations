@@ -5,7 +5,4 @@ locals {
 
   # the dns name can be at most 64 chars in total
   dns_name = "${trimsuffix(substr(local.environment, 0, 34), ".-")}.${data.terraform_remote_state.holi_donations_api_common_state.outputs.dns_donations_api_domain}"
-  # in staging and production envs, we are deploying the docker image built from the main branch
-  # TODO(SF) is this used anywhere?
-  docker_image_tag = contains(["staging", "production"], local.environment) ? "main" : local.environment
 }

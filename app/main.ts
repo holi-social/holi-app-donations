@@ -1,8 +1,6 @@
 import { gql, GraphQLHTTP, makeExecutableSchema, Server } from "./deps.ts";
 import type { Project, ProjectParameters } from "./types.ts";
 
-// TODO(SF) make port configurable? requires --allow-env
-// const PORT = Number(Deno.env.get("PORT")) || 8001
 const PORT = 8001;
 
 const typeDefs = gql`

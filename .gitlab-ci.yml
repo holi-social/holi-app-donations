@@ -8,7 +8,7 @@ default:
 
 variables:
   API_DOMAIN_PATH: "$CI_PROJECT_DIR/api_domain"
-  # DENO_DIR: "$CI_PROJECT_DIR/.cache/deno" # TODO(SF) does this make sense?
+  # DENO_DIR: "$CI_PROJECT_DIR/.cache/deno" # TODO(SF) use for caching? value ok?
 
 # job templates
 
@@ -33,7 +33,6 @@ variables:
   resource_group: $ENVIRONMENT_ID # never execute terraform in parallel on the same environment
   interruptible: false
 
-# TODO(SF) e2e
 .e2e:
   image: 'archlinux:latest'
   script:
@@ -47,18 +46,15 @@ variables:
 
 ## common steps
 
-
 cache_lint_test:
   image: 'denoland/deno:alpine-1.25.1'
   stage: 'test'
   script:
-    # TODO(SF) make sure to use DENO_DIR env
     - deno task install
     - deno fmt --check
     - deno lint
-    - echo "execute tests here" # TODO(SF)
+    - echo "execute tests here"
 
-# TODO(SF) use this in frontend as well?
 # You can override the included template(s) by including variable overrides
 # SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
 # Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings

@@ -39,7 +39,7 @@ resource "google_cloud_run_service" "donations_api" {
       containers {
         image = "${data.terraform_remote_state.holi_infra_state.outputs.gcr_location}/holi-donations-api:${var.image_tag}"
         ports {
-          container_port = 80 # TODO(SF) adjust!
+          container_port = 8001
         }
         # TODO(SF) fill necessary!
         # env {
@@ -72,7 +72,6 @@ resource "google_cloud_run_service" "donations_api" {
         }
       }
       container_concurrency = 0 # 0 means thread safe, no restriction on max concurrency
-      # timeout_seconds       = 300 TODO(SF) what is this used for?
     }
     # template annotations: https://cloud.google.com/run/docs/reference/rpc/google.cloud.run.v1#revisiontemplate
     metadata {

@@ -1,6 +1,4 @@
-# Holi Donations
-
-TODO(SF): rename repo to donations-api or app prefix?
+# Holi App Donations
 
 ## Getting started
 
@@ -42,7 +40,7 @@ http://localhost:8001/graphql
 ## Execute locally using docker
 
 ```sh
-docker build -t donations-api . && docker run -it --init -p 8001:8001 donations-api
+deno task docker
 ```
 
 ## VS Code extension
@@ -58,13 +56,7 @@ TODO: testing https://deno.land/manual/testing
 TODO: fix version? version manager necessary? e.g
 https://github.com/justjavac/dvm
 
-TODO: terraform
-
-TODO: mesh der graphql apis > prefix?
-
 TODO: sentry
-
-TODO: authorization (unified-api > .meshrc.yml)
 
 TODO: e2e tests?
 
