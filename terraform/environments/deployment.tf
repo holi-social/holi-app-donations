@@ -102,18 +102,18 @@ resource "google_cloud_run_service" "donations_api" {
   depends_on = [google_project_service.service]
 }
 
-resource "google_cloud_run_domain_mapping" "okuna" {
-  project = google_cloud_run_service.okuna.project
+resource "google_cloud_run_domain_mapping" "donations_api" {
+  project = google_cloud_run_service.donations_api.project
   # location needs to be the same as the service's
-  location = google_cloud_run_service.okuna.location
+  location = google_cloud_run_service.donations_api.location
   name     = local.dns_name
 
   metadata {
-    namespace = google_cloud_run_service.okuna.project
+    namespace = google_cloud_run_service.donations_api.project
   }
 
   spec {
-    route_name = google_cloud_run_service.okuna.name
+    route_name = google_cloud_run_service.donations_api.name
   }
 }
 
