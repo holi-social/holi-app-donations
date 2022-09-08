@@ -10,7 +10,7 @@ locals {
 resource "google_dns_managed_zone" "donations_api_environments_zone" {
   project  = data.terraform_remote_state.holi_infra_state.outputs.shared_project_id
   name     = "donations-api-environments-zone"
-  dns_name = local.donations_environments_zone_dns_name
+  dns_name = local.donations_api_environments_zone_dns_name
 }
 
 resource "google_dns_record_set" "donations_api_environments_zone_entry" {
