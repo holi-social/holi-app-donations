@@ -41,7 +41,7 @@ const resolvers = {
       _parent: any,
       { pageSize = 5, locale = "en" }: ProjectParameters,
     ) => {
-      console.log(`Requested ${pageSize} projects in ${locale}`);
+      console.debug(`Requested ${pageSize} projects in ${locale}`);
       // TODO(SF) validate params
       return Array(pageSize).fill(testProject);
     },
@@ -65,4 +65,4 @@ const s = new Server({
 
 s.listenAndServe();
 
-console.log(`Started on http://localhost:${PORT}/graphql`);
+console.info(`Started on http://localhost:${PORT}/graphql`);

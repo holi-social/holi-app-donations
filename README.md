@@ -87,9 +87,8 @@ TODO: use [Velocirator](https://velociraptor.run/) instead?
 There is an official VS Code extension for Deno:
 [vscode-deno](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno).
 
-After installation it is necessary to enable Deno for the workspace, e.g. by
-running the command `Deno: Initialize Workspace Configuration`. For more
-information check the [documentation](https://deno.land/manual/vscode_deno).
+It should already be enabled for the workspace, for more information check the
+[documentation](https://deno.land/manual/vscode_deno).
 
 ## Local execution
 
