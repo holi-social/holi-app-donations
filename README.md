@@ -112,7 +112,7 @@ deno task docker
 
 to execute the application in a local docker container.
 
-Afterwards you can access the graphql UI here:
+Afterwards you can access the graphql playground here:
 
 `http://localhost:8001/graphql`
 

@@ -1,5 +1,6 @@
+import { fetchProjects } from "./betterplace.ts";
 import { gql, GraphQLHTTP, makeExecutableSchema, Server } from "./deps.ts";
-import type { Project, ProjectParameters } from "./types.ts";
+import type { ProjectParameters } from "./types.ts";
 
 const PORT = 8001;
 
@@ -19,32 +20,35 @@ const typeDefs = gql`
     picture: [Picture]
   }
 
+  interface Pagination {
+    totalResults: Int!
+    offset: Int!
+    totalPages: Int!
+    currentPage: Int!
+    pageSize: Int!
+  }
+
+  type ProjectResponse implements Pagination {
+    totalResults: Int!
+    offset: Int!
+    totalPages: Int!
+    currentPage: Int!
+    pageSize: Int!
+    projects: [Project]
+  }
+
   type Query {
-    projects(locale: String, pageSize: Int): [Project]
+    projects(locale: String, pageSize: Int): ProjectResponse
   }
 `;
-
-const testProject: Project = {
-  id: 1,
-  title: "foobar",
-  category: "FOOBAR",
-  donationsCount: 42,
-  progressPercentage: 13,
-  openAmountInCents: 42000,
-  picture: [],
-};
 
 const resolvers = {
   Query: {
     projects: (
       // deno-lint-ignore no-explicit-any
       _parent: any,
-      { pageSize = 5, locale = "en" }: ProjectParameters,
-    ) => {
-      console.debug(`Requested ${pageSize} projects in ${locale}`);
-      // TODO(SF) validate params
-      return Array(pageSize).fill(testProject);
-    },
+      parameters: ProjectParameters = {},
+    ) => fetchProjects(parameters),
   },
 };
 
