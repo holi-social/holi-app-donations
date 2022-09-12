@@ -1,3 +1,4 @@
+import { log } from "./deps.ts";
 import {
   Picture,
   PictureType,
@@ -56,8 +57,13 @@ export const fetchProjects = async (
     "facets=completed:false|closed:false|prohibit_donations:false&" +
     `order=rank:DESC&per_page=${pageSize}`;
   const url = `${BASE_URL}/${locale}/api_v4/projects.json?${params}`;
-  console.debug(`performing request to ${url}`);
-  const result = await fetch(url);
-  const parsedResult = await result.json();
-  return transformProjectResponse(parsedResult);
+  log.debug(`performing request to ${url}`);
+  try {
+    const result = await fetch(url);
+    const parsedResult = await result.json();
+    return transformProjectResponse(parsedResult);
+  } catch (e) {
+    log.error(`Error performing request to ${url}: ${e.message}`);
+    throw e;
+  }
 };

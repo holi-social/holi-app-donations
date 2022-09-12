@@ -1,5 +1,6 @@
 import { fetchProjects } from "./betterplace.ts";
-import { gql, GraphQLHTTP, makeExecutableSchema, Server } from "./deps.ts";
+import { gql, GraphQLHTTP, log, makeExecutableSchema, Server } from "./deps.ts";
+import setupLogging from "./logging.ts";
 import type { ProjectParameters } from "./types.ts";
 
 const PORT = 8001;
@@ -46,6 +47,8 @@ const resolvers = {
   },
 };
 
+setupLogging();
+
 const schema = makeExecutableSchema({ resolvers, typeDefs });
 
 const s = new Server({
@@ -63,4 +66,4 @@ const s = new Server({
 
 s.listenAndServe();
 
-console.info(`Started on http://localhost:${PORT}/graphql`);
+log.info(`Started on http://localhost:${PORT}/graphql`);
