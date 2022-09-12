@@ -10,6 +10,7 @@ The backend for handling donation projects, including a GraphQL API for
     - [Setup](#setup)
     - [Code style](#code-style)
     - [Dependencies](#dependencies)
+    - [Compiling (optional)](#compiling-optional)
     - [Tasks](#tasks)
     - [VS Code extension](#vs-code-extension)
   - [Local execution](#local-execution)
@@ -24,11 +25,7 @@ The backend for handling donation projects, including a GraphQL API for
 
 ### Setup
 
-Install [`deno`](https://github.com/denoland/deno_install).
-
-TODO: specify version? (currently 1.25.1)
-
-TODO: use version manager? e.g [dvm](https://github.com/justjavac/dvm)
+Install [`deno`](https://github.com/denoland/deno_install) in version 1.25.1.
 
 ### Code style
 
@@ -65,13 +62,20 @@ deno task updateDeps
 to update the `lock.json` file (similiar to Node.js `package.lock` including
 hashes).
 
-To just install and cache dependencies locally, run
+To just install and cache dependencies locally or force a reload of dependencies, run
 
 ```sh
 deno task install
 ```
 
-TODO: use [vendoring](https://deno.land/manual/tools/vendor)?
+### Compiling (optional)
+
+Deno will compile all TypeScript code to JavaScript and cache the resulting files.
+This will happen automatically when you run the code, but you can also trigger this manually by running
+
+```sh
+deno task cache
+```
 
 ### Tasks
 
@@ -92,19 +96,19 @@ It should already be enabled for the workspace, for more information check the
 
 ## Local execution
 
-Optional: Cache the main application for quicker execution:
+To watch for file changes during development, run
 
 ```sh
-deno task cache
+deno task dev
 ```
 
-Run
+To execute the application without watching for file changes run
 
 ```sh
 deno task start
 ```
 
-to execute the application locally or
+or run
 
 ```sh
 deno task docker
@@ -132,19 +136,7 @@ if "you know what you're doing".
 
 ## TODOs
 
-TODO: add commit hooks for fmt + lint
+TODO: add commit hooks for fmt + lint > vr (velociraptor) seems to be the easiest solution <https://velociraptor.run/docs/git-hooks/>
+2nd place <https://github.com/nozaq/pre-commit-deno>
 
 TODO: [testing](https://deno.land/manual/testing)
-
-TODO: [logging](https://deno.land/x/deno_util/logger.ts)
-
-TODO: sentry
-
-TODO: [build binary](https://deno.land/manual/tools/compiler) and copy to docker
-container?
-`deno compile --allow-net --lock=lock.json --cached-only --output=donations-api app/main.ts`
-
-TODO: use other lib for http? std/http, tinyhttp or Opine
-[gql examples](https://deno.land/x/gql@1.1.2)
-
-TODO: use [oak](https://deno.land/x/oak/mod.ts) for server?

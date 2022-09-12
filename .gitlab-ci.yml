@@ -8,7 +8,6 @@ default:
 
 variables:
   API_DOMAIN_PATH: "$CI_PROJECT_DIR/api_domain"
-  # DENO_DIR: "$CI_PROJECT_DIR/.cache/deno" # TODO(SF) use for caching? value ok?
 
 # job templates
 
