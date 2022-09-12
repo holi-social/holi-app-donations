@@ -45,9 +45,6 @@ const transformProjectResponse = (response: any): ProjectsResponse => {
   return {
     totalResults: response.total_entries,
     offset: response.offset,
-    totalPages: response.total_pages,
-    currentPage: response.current_page,
-    pageSize: response.per_page,
     projects: response.data.map(transformProject),
   };
 };
@@ -56,7 +53,8 @@ export const fetchProjects = async (
   { locale = "en", pageSize = 5 }: ProjectParameters,
 ): Promise<ProjectsResponse> => {
   const params =
-    `facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&per_page=${pageSize}`;
+    "facets=completed:false|closed:false|prohibit_donations:false&" +
+    `order=rank:DESC&per_page=${pageSize}`;
   const url = `${BASE_URL}/${locale}/api_v4/projects.json?${params}`;
   console.debug(`performing request to ${url}`);
   const result = await fetch(url);

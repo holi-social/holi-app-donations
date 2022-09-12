@@ -28,9 +28,6 @@ export interface Project {
 export interface Pagination {
   totalResults: number;
   offset: number;
-  totalPages: number;
-  currentPage: number;
-  pageSize: number;
 }
 
 export interface ProjectsResponse extends Pagination {

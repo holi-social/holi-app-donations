@@ -23,17 +23,11 @@ const typeDefs = gql`
   interface Pagination {
     totalResults: Int!
     offset: Int!
-    totalPages: Int!
-    currentPage: Int!
-    pageSize: Int!
   }
 
   type ProjectResponse implements Pagination {
     totalResults: Int!
     offset: Int!
-    totalPages: Int!
-    currentPage: Int!
-    pageSize: Int!
     projects: [Project]
   }
 
