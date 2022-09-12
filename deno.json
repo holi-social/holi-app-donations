@@ -3,6 +3,7 @@
     "updateDeps": "deno cache --lock=lock.json --lock-write app/deps.ts",
     "install": "deno cache --reload --lock=lock.json app/deps.ts",
     "cache": "deno cache app/main.ts",
+    "dev": "deno run --allow-net --lock=lock.json --cached-only --watch app/main.ts",
     "start": "deno run --allow-net --lock=lock.json --cached-only app/main.ts",
     "docker": "docker build -t donations-api . && docker run -it --init -p 8001:8001 donations-api"
   }
