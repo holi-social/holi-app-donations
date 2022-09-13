@@ -11,6 +11,7 @@ The backend for handling donation projects, including a GraphQL API for
     - [Code style](#code-style)
     - [Dependencies](#dependencies)
     - [Compiling (optional)](#compiling-optional)
+    - [Testing](#testing)
     - [Tasks](#tasks)
     - [VS Code extension](#vs-code-extension)
   - [Local execution](#local-execution)
@@ -77,6 +78,24 @@ This will happen automatically when you run the code, but you can also trigger t
 deno task cache
 ```
 
+### Testing
+
+Tests can be executed with
+
+```sh
+deno test
+```
+
+(Test filenames should end on a `_test` prefix).
+
+To get information about test coverage use
+
+```sh
+deno task coverage
+```
+
+For more information, e.g. on how to create different coverage formats, see the [documentation](https://deno.land/manual/testing/coverage)
+
 ### Tasks
 
 Currently we are using `deno task` for execution of scripts that are defined in
@@ -138,5 +157,3 @@ if "you know what you're doing".
 
 TODO: add commit hooks for fmt + lint > vr (velociraptor) seems to be the easiest solution <https://velociraptor.run/docs/git-hooks/>
 2nd place <https://github.com/nozaq/pre-commit-deno>
-
-TODO: [testing](https://deno.land/manual/testing)

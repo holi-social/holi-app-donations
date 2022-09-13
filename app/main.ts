@@ -33,7 +33,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    projects(locale: String, pageSize: Int): ProjectResponse
+    projects(locale: String, limit: Int, offset: Int): ProjectResponse
   }
 `;
 

@@ -18,7 +18,7 @@ const PICTURE_TYPE_MAPPING: {
 // deno-lint-ignore no-explicit-any
 const transformPicture = (picture: any): Picture[] => {
   // deno-lint-ignore no-explicit-any
-  return picture.links.filter((link: any) =>
+  return (picture?.links || []).filter((link: any) =>
     link.href && Object.keys(PICTURE_TYPE_MAPPING).includes(link.rel)
   ).map((link: { href: string; rel: string }) => {
     return {
@@ -51,11 +51,12 @@ const transformProjectResponse = (response: any): ProjectsResponse => {
 };
 
 export const fetchProjects = async (
-  { locale = "en", pageSize = 5 }: ProjectParameters,
+  { locale = "en", limit = 5, offset = 0 }: ProjectParameters,
 ): Promise<ProjectsResponse> => {
+  const page = Math.floor(offset / limit)
   const params =
     "facets=completed:false|closed:false|prohibit_donations:false&" +
-    `order=rank:DESC&per_page=${pageSize}`;
+    `order=rank:DESC&page=${page}&per_page=${limit}`;
   const url = `${BASE_URL}/${locale}/api_v4/projects.json?${params}`;
   log.debug(`performing request to ${url}`);
   try {

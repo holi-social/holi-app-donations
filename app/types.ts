@@ -2,7 +2,8 @@ export type Locale = "de" | "en";
 
 export interface ProjectParameters {
   locale?: Locale;
-  pageSize?: number;
+  limit?: number;
+  offset?: number;
 }
 
 export type PictureType = "original" | "small";
