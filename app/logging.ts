@@ -1,4 +1,3 @@
-import { setup } from "https://deno.land/std@0.155.0/log/mod.ts";
 import { log } from "./deps.ts";
 
 const environment = Deno.env.get("ENVIRONMENT") || "development";

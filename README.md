@@ -63,7 +63,8 @@ deno task updateDeps
 to update the `lock.json` file (similiar to Node.js `package.lock` including
 hashes).
 
-To just install and cache dependencies locally or force a reload of dependencies, run
+To just install and cache dependencies locally or force a reload of
+dependencies, run
 
 ```sh
 deno task install
@@ -71,8 +72,9 @@ deno task install
 
 ### Compiling (optional)
 
-Deno will compile all TypeScript code to JavaScript and cache the resulting files.
-This will happen automatically when you run the code, but you can also trigger this manually by running
+Deno will compile all TypeScript code to JavaScript and cache the resulting
+files. This will happen automatically when you run the code, but you can also
+trigger this manually by running
 
 ```sh
 deno task cache
@@ -94,7 +96,8 @@ To get information about test coverage use
 deno task coverage
 ```
 
-For more information, e.g. on how to create different coverage formats, see the [documentation](https://deno.land/manual/testing/coverage)
+For more information, e.g. on how to create different coverage formats, see the
+[documentation](https://deno.land/manual/testing/coverage)
 
 ### Tasks
 
@@ -155,5 +158,6 @@ if "you know what you're doing".
 
 ## TODOs
 
-TODO: add commit hooks for fmt + lint > vr (velociraptor) seems to be the easiest solution <https://velociraptor.run/docs/git-hooks/>
-2nd place <https://github.com/nozaq/pre-commit-deno>
+TODO: add commit hooks for fmt + lint > vr (velociraptor) seems to be the
+easiest solution <https://velociraptor.run/docs/git-hooks/> 2nd place
+<https://github.com/nozaq/pre-commit-deno>
