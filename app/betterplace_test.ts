@@ -135,7 +135,7 @@ describe("betterplace", () => {
         {
           id: 1,
           title: "Project 1",
-          category: "DUMMY_CATEGORY",
+          categories: ["DUMMY_CATEGORY"],
           donationsCount: 42,
           progressPercentage: 33,
           openAmountInCents: 421234,
@@ -153,7 +153,7 @@ describe("betterplace", () => {
         {
           id: 2,
           title: "Project 2",
-          category: "DUMMY_CATEGORY",
+          categories: ["DUMMY_CATEGORY"],
           donationsCount: 13,
           progressPercentage: 10,
           openAmountInCents: 1234567,
@@ -162,7 +162,7 @@ describe("betterplace", () => {
         {
           id: 3,
           title: "Project 3",
-          category: "DUMMY_CATEGORY",
+          categories: ["DUMMY_CATEGORY"],
           donationsCount: 0,
           progressPercentage: 0,
           openAmountInCents: 4200000,
@@ -171,7 +171,7 @@ describe("betterplace", () => {
         {
           id: 4,
           title: "Project 4",
-          category: "DUMMY_CATEGORY",
+          categories: ["DUMMY_CATEGORY"],
           donationsCount: 0,
           progressPercentage: 0,
           openAmountInCents: 1200000,

@@ -52,7 +52,7 @@ cache_lint_test:
     - deno task install
     - deno fmt --check
     - deno lint
-    - echo "execute tests here"
+    - deno test
 
 # You can override the included template(s) by including variable overrides
 # SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings

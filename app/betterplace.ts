@@ -33,7 +33,7 @@ const transformProject = (project: any): Project => {
   return {
     id: project.id,
     title: project.title,
-    category: "DUMMY_CATEGORY", // TODO: has to be resolved in 2nd api request
+    categories: ["DUMMY_CATEGORY"], // TODO: have to be resolved in 2nd api request
     donationsCount: project.donations_count,
     progressPercentage: project.progress_percentage,
     openAmountInCents: project.open_amount_in_cents,
@@ -53,7 +53,7 @@ const transformProjectResponse = (response: any): ProjectsResponse => {
 export const fetchProjects = async (
   { locale = "en", limit = 5, offset = 0 }: ProjectParameters,
 ): Promise<ProjectsResponse> => {
-  const page = Math.floor(offset / limit)
+  const page = Math.floor(offset / limit);
   const params =
     "facets=completed:false|closed:false|prohibit_donations:false&" +
     `order=rank:DESC&page=${page}&per_page=${limit}`;

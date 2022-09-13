@@ -16,8 +16,7 @@ export interface Picture {
 export interface Project {
   id: number;
   title: string;
-  /** First category in lint */
-  category: string;
+  categories: string[];
   donationsCount: number;
   /** Number between 0 and 100 */
   progressPercentage: number;

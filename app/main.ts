@@ -14,7 +14,7 @@ const typeDefs = gql`
   type Project {
     id: Int!
     title: String!
-    category: String!
+    categories: [String]!
     donationsCount: Int!
     progressPercentage: Int!
     openAmountInCents: Int!
