@@ -8,7 +8,7 @@ import {
   assertEquals,
   assertRejects,
 } from "https://deno.land/std@0.155.0/testing/asserts.ts";
-import { fetchProjects } from "./betterplace.ts";
+import {fetchProjects} from "./betterplace.ts";
 import {
   afterEach,
   describe,
@@ -30,6 +30,11 @@ const stubFetch = (response: any) => {
   );
 };
 
+// deno-lint-ignore no-explicit-any
+const stubFetchFn = (fn: (input: string | URL | Request) => Promise<any>) => {
+  return stub(globalThis, "fetch", fn);
+}
+
 describe("betterplace", () => {
   let fetchStub: Stub;
 
@@ -40,11 +45,11 @@ describe("betterplace", () => {
   it("calls api with correct parameters", async () => {
     fetchStub = stubFetch(emptyResponse);
 
-    await fetchProjects({ locale: "de", limit: 10, offset: 20 });
+    await fetchProjects({locale: "de", limit: 10, offset: 20});
 
     const expectedUrl = "https://api.betterplace.org/de/api_v4/projects.json?" +
       "facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&page=2&per_page=10";
-    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+    assertSpyCall(fetchStub, 0, {args: [expectedUrl]});
   });
 
   it("uses default parameters for api call if missing", async () => {
@@ -54,7 +59,7 @@ describe("betterplace", () => {
 
     const expectedUrl = "https://api.betterplace.org/en/api_v4/projects.json?" +
       "facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&page=0&per_page=5";
-    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+    assertSpyCall(fetchStub, 0, {args: [expectedUrl]});
   });
 
   it("correctly parses empty response", async () => {
@@ -71,7 +76,8 @@ describe("betterplace", () => {
   });
 
   it("correctly parses project list", async () => {
-    fetchStub = stubFetch({
+
+    const apiProjectsResult = {
       total_entries: 123,
       offset: 20,
       data: [
@@ -97,6 +103,7 @@ describe("betterplace", () => {
               },
             ],
           },
+          links: [],
         },
         {
           id: 2,
@@ -107,6 +114,7 @@ describe("betterplace", () => {
           profile_picture: {
             links: [],
           },
+          links: [],
         },
         {
           id: 3,
@@ -115,6 +123,7 @@ describe("betterplace", () => {
           progress_percentage: 0,
           open_amount_in_cents: 4200000,
           profile_picture: {},
+          links: [],
         },
         {
           id: 4,
@@ -122,8 +131,51 @@ describe("betterplace", () => {
           donations_count: 0,
           progress_percentage: 0,
           open_amount_in_cents: 1200000,
+          links: [],
         },
       ],
+    }
+
+    const apiProjectsCategoriesResult = {
+      total_entries: 2,
+      offset: 0,
+      total_pages: 1,
+      current_page: 1,
+      per_page: 20,
+      data: [
+        {
+          id: 3,
+          created_at: "2016-12-13T16:18:14+01:00",
+          updated_at: "2018-12-03T17:26:13+01:00",
+          name: "Education",
+          slug: "education",
+          links: [[Object]]
+        },
+        {
+          id: 44,
+          created_at: "2018-08-13T17:01:27+02:00",
+          updated_at: "2021-07-19T11:40:13+02:00",
+          name: "Popular",
+          slug: "popular",
+          links: [[Object]]
+        }
+      ]
+    }
+
+    fetchStub = stubFetchFn((input) => {
+      if ((input as string).startsWith('https://api.betterplace.org/en/api_v4/projects.json')) {
+        return Promise.resolve({
+          json: () => Promise.resolve(JSON.stringify(apiProjectsResult))
+        }) as Promise<any>
+      } else if ((input as string).startsWith('https://api.betterplace.org/en/api_v4/projects/')) {
+        return Promise.resolve({
+          json: () => Promise.resolve(JSON.stringify(apiProjectsCategoriesResult))
+        }) as Promise<any>
+      } else {
+        return Promise.resolve({
+          json: () => Promise.reject(new Error(`Unexpected request URL "${input}"`))
+        }) as Promise<any>
+      }
     });
 
     const result = await fetchProjects({});
@@ -135,7 +187,7 @@ describe("betterplace", () => {
         {
           id: 1,
           title: "Project 1",
-          categories: ["DUMMY_CATEGORY"],
+          categories: ["education", "popular"],
           donationsCount: 42,
           progressPercentage: 33,
           openAmountInCents: 421234,
@@ -153,7 +205,7 @@ describe("betterplace", () => {
         {
           id: 2,
           title: "Project 2",
-          categories: ["DUMMY_CATEGORY"],
+          categories: ["education", "popular"],
           donationsCount: 13,
           progressPercentage: 10,
           openAmountInCents: 1234567,
@@ -162,7 +214,7 @@ describe("betterplace", () => {
         {
           id: 3,
           title: "Project 3",
-          categories: ["DUMMY_CATEGORY"],
+          categories: ["education", "popular"],
           donationsCount: 0,
           progressPercentage: 0,
           openAmountInCents: 4200000,
@@ -171,7 +223,7 @@ describe("betterplace", () => {
         {
           id: 4,
           title: "Project 4",
-          categories: ["DUMMY_CATEGORY"],
+          categories: ["education", "popular"],
           donationsCount: 0,
           progressPercentage: 0,
           openAmountInCents: 1200000,
