@@ -10,7 +10,7 @@ COPY lock.json .
 COPY deno.json .
 COPY ./app ./app
 
-RUN deno task install
-RUN deno task cache
+RUN deno cache --lock=lock.json app/deps.ts
+RUN deno cache app/main.ts
 
-CMD ["deno", "task", "start"]
+CMD ["deno", "run", "--allow-net", "--allow-env", "--lock=lock.json", "--cached-only", "app/main.ts"]

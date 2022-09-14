@@ -8,7 +8,6 @@ default:
 
 variables:
   API_DOMAIN_PATH: "$CI_PROJECT_DIR/api_domain"
-  # DENO_DIR: "$CI_PROJECT_DIR/.cache/deno" # TODO(SF) use for caching? value ok?
 
 # job templates
 
@@ -50,10 +49,10 @@ cache_lint_test:
   image: 'denoland/deno:alpine-1.25.1'
   stage: 'test'
   script:
-    - deno task install
+    - deno cache --lock=lock.json app/deps.ts
     - deno fmt --check
     - deno lint
-    - echo "execute tests here"
+    - deno test
 
 # You can override the included template(s) by including variable overrides
 # SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
