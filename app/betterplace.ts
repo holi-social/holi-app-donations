@@ -38,6 +38,13 @@ type ApiProject = {
   profile_picture: ApiProfilePicture | undefined;
 };
 
+/** only covers the parts of the API response type that were using */
+type ApiProjectsResponse = {
+  total_entries: number;
+  offset: number;
+  data: Array<ApiProject>;
+};
+
 type ApiProjectCategorySlug = string;
 
 type ApiProjectCategory = {
@@ -97,10 +104,9 @@ const parallelFetchProjectsCategories = (
 };
 
 const transformProjectResponse = async (
-  // deno-lint-ignore no-explicit-any
-  response: any,
+  response: ApiProjectsResponse,
 ): Promise<ProjectsResponse> => {
-  const apiProjects = response.data as Array<ApiProject>;
+  const apiProjects = response.data;
   const allProjectsCategoriesById: ApiProjectCategoriesMap =
     await parallelFetchProjectsCategories(apiProjects);
   return {
