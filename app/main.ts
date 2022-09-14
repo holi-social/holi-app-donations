@@ -34,7 +34,7 @@ const typeDefs = gql`
 
   type Query {
     # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
-    projects(locale: String, limit: Int, offset: Int): ProjectResponse
+    projects(locale: String, limit: Int, offset: Int): ProjectsResponse
   }
 `;
 
