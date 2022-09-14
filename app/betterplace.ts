@@ -1,4 +1,4 @@
-import {log} from "./deps.ts";
+import { log } from "./deps.ts";
 import {
   Picture,
   PictureType,
@@ -88,7 +88,7 @@ const parallelFetchProjectsCategories = (
     .all(apiProjects.map((apiProject) => {
       return fetchCategories(apiProject)
         .then((categories) => {
-          return {id: apiProject.id, categories: categories};
+          return { id: apiProject.id, categories: categories };
         });
     }))
     .then((allProjectsCategoriesArray) =>
@@ -100,9 +100,7 @@ const transformProjectResponse = async (
   // deno-lint-ignore no-explicit-any
   response: any,
 ): Promise<ProjectsResponse> => {
-  console.debug('response', response)
   const apiProjects = response.data as Array<ApiProject>;
-  console.debug('apiProjects', apiProjects)
   const allProjectsCategoriesById: ApiProjectCategoriesMap =
     await parallelFetchProjectsCategories(apiProjects);
   return {
@@ -143,16 +141,17 @@ const fetchCategories = (
   }
 };
 
-// deno-lint-ignore no-explicit-any
-const debugP = (desc: string | undefined = undefined) => async (elemP: any) => {
-  const elem = await elemP
-  if (desc) console.debug(desc, elem)
-  else console.debug(elem)
-  return elem
-}
+const _debugP =
+  // deno-lint-ignore no-explicit-any
+  (desc: string | undefined = undefined) => async (elemP: any) => {
+    const elem = await elemP;
+    if (desc) console.debug(desc, elem);
+    else console.debug(elem);
+    return elem;
+  };
 
 export const fetchProjects = (
-  {locale = "en", limit = 5, offset = 0}: ProjectParameters,
+  { locale = "en", limit = 5, offset = 0 }: ProjectParameters,
 ): Promise<ProjectsResponse> => {
   const page = Math.floor(offset / limit);
   const params =
@@ -162,11 +161,8 @@ export const fetchProjects = (
   const start = Date.now();
   log.debug(`fetching projects from ${url}`);
   return fetch(url)
-    .then(debugP('  after fetch()'))
     .then((result) => result.json())
-    .then(debugP('  after json()'))
     .then(transformProjectResponse)
-    .then(debugP('  after transformProjectResponse()'))
     .then((result) => {
       log.debug(
         `  fetching projects (including categories) took ${
