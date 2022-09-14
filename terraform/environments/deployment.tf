@@ -41,22 +41,17 @@ resource "google_cloud_run_service" "donations_api" {
         ports {
           container_port = 8001
         }
-        # TODO(SF) fill necessary!
-        # env {
-        #   name  = "ENVIRONMENT"
-        #   value = "production"
-        # }
+        env {
+          name  = "ENVIRONMENT"
+          value = local.environment
+        }
         # env {
         #   name  = "ENVIRONMENT_ID"
         #   value = local.environment_name
         # }
         # env {
-        #   name  = "ALLOWED_HOSTS"
-        #   value = "*"
-        # }
-        # env {
         #   name  = "SENTRY_DSN"
-        #   value = "https://41084c0584d04b38a27d49fab9591b42@o949544.ingest.sentry.io/6421964"
+        #   value = "https://0e0fac0c76884e0a95432d780c4560fc@o949544.ingest.sentry.io/6741291"
         # }
 
         resources {

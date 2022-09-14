@@ -10,13 +10,14 @@ The backend for handling donation projects, including a GraphQL API for
     - [Setup](#setup)
     - [Code style](#code-style)
     - [Dependencies](#dependencies)
+    - [Compiling (optional)](#compiling-optional)
+    - [Testing](#testing)
     - [Tasks](#tasks)
     - [VS Code extension](#vs-code-extension)
   - [Local execution](#local-execution)
   - [Continuous Integration and Deployment](#continuous-integration-and-deployment)
     - [Skipping parts of CI](#skipping-parts-of-ci)
       - [noenv Branches](#noenv-branches)
-  - [TODOs](#todos)
 
 <!-- /TOC -->
 
@@ -24,24 +25,22 @@ The backend for handling donation projects, including a GraphQL API for
 
 ### Setup
 
-Install [`deno`](https://github.com/denoland/deno_install).
+Install [`deno`](https://github.com/denoland/deno_install) in version 1.25.1
 
-TODO: specify version? (currently 1.25.1)
-
-TODO: use version manager? e.g [dvm](https://github.com/justjavac/dvm)
+as well as [`Velociraptor`](https://velociraptor.run/docs/installation/).
 
 ### Code style
 
 Linting:
 
 ```sh
-deno lint
+vr lint
 ```
 
 Formatting:
 
 ```sh
-deno fmt
+vr fmt
 ```
 
 Configuration for
@@ -59,28 +58,61 @@ Node.js `package.json`) for caching and integrity checks. After adding a
 dependency run
 
 ```sh
-deno task updateDeps
+vr updateDeps
 ```
 
 to update the `lock.json` file (similiar to Node.js `package.lock` including
 hashes).
 
-To just install and cache dependencies locally, run
+To just install and cache dependencies locally or force a reload of
+dependencies, run
 
 ```sh
-deno task install
+vr install
 ```
 
-TODO: use [vendoring](https://deno.land/manual/tools/vendor)?
+### Compiling (optional)
+
+Deno will compile all TypeScript code to JavaScript and cache the resulting
+files. This will happen automatically when you run the code, but you can also
+trigger this manually by running
+
+```sh
+vr cache
+```
+
+### Testing
+
+Tests can be executed with
+
+```sh
+vr test
+```
+
+(Test filenames should end on a `_test` prefix).
+
+To get information about test coverage use
+
+```sh
+vr coverage
+```
+
+For more information, e.g. on how to create different coverage formats, see the
+[documentation](https://deno.land/manual/testing/coverage)
 
 ### Tasks
 
-Currently we are using `deno task` for execution of scripts that are defined in
-`deno.json` (similiar to scripts defined in Node.js `package.json`). Beware that
-this is declared "unstable and may drastically change in the future" (see
-[documentation](https://deno.land/manual/tools/task_runner)).
+We use [`Velociraptor`](https://velociraptor.run/) to execute scripts that are
+defined beneath `velociraptor > scripts` in `deno.json` (similiar to scripts
+defined in Node.js `package.json`).
 
-TODO: use [Velocirator](https://velociraptor.run/) instead?
+You can run
+
+```sh
+vr
+```
+
+to get a list of all available tasks.
 
 ### VS Code extension
 
@@ -92,27 +124,27 @@ It should already be enabled for the workspace, for more information check the
 
 ## Local execution
 
-Optional: Cache the main application for quicker execution:
+To watch for file changes during development, run
 
 ```sh
-deno task cache
+vr dev
 ```
 
-Run
+To execute the application without watching for file changes run
 
 ```sh
-deno task start
+vr start
 ```
 
-to execute the application locally or
+or run
 
 ```sh
-deno task docker
+vr docker
 ```
 
 to execute the application in a local docker container.
 
-Afterwards you can access the graphql UI here:
+Afterwards you can access the graphql playground here:
 
 `http://localhost:8001/graphql`
 
@@ -129,22 +161,3 @@ When you prefix your branch name with `noenv/` (e.g. `noenv/my-readme-update`)
 the pipeline only lints & builds, but does not publish, deploy or run e2e test.
 This saves quite some time. Obviously, many things go untested so only use this
 if "you know what you're doing".
-
-## TODOs
-
-TODO: add commit hooks for fmt + lint
-
-TODO: [testing](https://deno.land/manual/testing)
-
-TODO: [logging](https://deno.land/x/deno_util/logger.ts)
-
-TODO: sentry
-
-TODO: [build binary](https://deno.land/manual/tools/compiler) and copy to docker
-container?
-`deno compile --allow-net --lock=lock.json --cached-only --output=donations-api app/main.ts`
-
-TODO: use other lib for http? std/http, tinyhttp or Opine
-[gql examples](https://deno.land/x/gql@1.1.2)
-
-TODO: use [oak](https://deno.land/x/oak/mod.ts) for server?
