@@ -27,20 +27,20 @@ The backend for handling donation projects, including a GraphQL API for
 
 Install [`deno`](https://github.com/denoland/deno_install) in version 1.25.1
 
-as well as [`velocirator`](https://velociraptor.run/docs/installation/).
+as well as [`Velociraptor`](https://velociraptor.run/docs/installation/).
 
 ### Code style
 
 Linting:
 
 ```sh
-deno lint
+vr lint
 ```
 
 Formatting:
 
 ```sh
-deno fmt
+vr fmt
 ```
 
 Configuration for
@@ -86,7 +86,7 @@ vr cache
 Tests can be executed with
 
 ```sh
-deno test
+vr test
 ```
 
 (Test filenames should end on a `_test` prefix).
@@ -102,8 +102,8 @@ For more information, e.g. on how to create different coverage formats, see the
 
 ### Tasks
 
-We use [`Velocirator`](https://velociraptor.run/) to execute scripts that are
-defined beneath `velocirator > scripts` in `deno.json` (similiar to scripts
+We use [`Velociraptor`](https://velociraptor.run/) to execute scripts that are
+defined beneath `velociraptor > scripts` in `deno.json` (similiar to scripts
 defined in Node.js `package.json`).
 
 You can run

@@ -1,6 +1,10 @@
 {
   "velociraptor": {
     "scripts": {
+      "lint": "deno lint",
+      "fmt": "deno fmt",
+      "fmt:check": "deno fmt --check",
+      "test": "deno test",
       "updateDeps": "deno cache --lock=lock.json --lock-write app/deps.ts",
       "install": "deno cache --reload --lock=lock.json app/deps.ts",
       "cache": "deno cache app/main.ts",
@@ -9,7 +13,7 @@
       "docker": "docker build -t donations-api . && docker run -it --init -p 8001:8001 donations-api",
       "coverage": "deno test --coverage=coverage && deno coverage coverage",
       "pre-commit": {
-        "cmd": "deno lint && deno fmt --check",
+        "cmd": "vr lint && vr fmt:check",
         "gitHook": "pre-commit"
       }
     }

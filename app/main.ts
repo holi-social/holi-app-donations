@@ -26,14 +26,15 @@ const typeDefs = gql`
     offset: Int!
   }
 
-  type ProjectResponse implements Pagination {
+  type ProjectsResponse implements Pagination {
     totalResults: Int!
     offset: Int!
     projects: [Project]
   }
 
   type Query {
-    projects(locale: String, limit: Int, offset: Int): ProjectResponse
+    # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
+    projects(locale: String, limit: Int, offset: Int): ProjectsResponse
   }
 `;
 
