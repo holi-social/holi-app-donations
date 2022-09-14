@@ -26,7 +26,7 @@ const typeDefs = gql`
     offset: Int!
   }
 
-  type ProjectResponse implements Pagination {
+  type ProjectsResponse implements Pagination {
     totalResults: Int!
     offset: Int!
     projects: [Project]
