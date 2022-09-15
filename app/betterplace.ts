@@ -8,6 +8,7 @@ import {
 } from "./types.ts";
 
 const BASE_URL = "https://api.betterplace.org";
+
 const PICTURE_TYPE_MAPPING: {
   [key: string]: PictureType;
 } = {
@@ -15,10 +16,52 @@ const PICTURE_TYPE_MAPPING: {
   fill_410x214: "small",
 };
 
-// deno-lint-ignore no-explicit-any
-const transformPicture = (picture: any): Picture[] => {
-  // deno-lint-ignore no-explicit-any
-  return (picture?.links || []).filter((link: any) =>
+type ApiProjectId = number;
+
+type ApiLink = {
+  href: string;
+  rel: string;
+};
+
+type ApiProfilePicture = {
+  links: Array<ApiLink>;
+};
+
+/** only covers the parts of the API response type that were using */
+type ApiProject = {
+  id: ApiProjectId;
+  title: string;
+  links: Array<ApiLink>;
+  donations_count: number;
+  progress_percentage: number;
+  open_amount_in_cents: number;
+  profile_picture: ApiProfilePicture | undefined;
+};
+
+/** only covers the parts of the API response type that were using */
+export type ApiProjectsResponse = {
+  total_entries: number;
+  offset: number;
+  data: Array<ApiProject>;
+};
+
+export type ApiProjectCategorySlug = string;
+
+export type ApiProjectCategory = {
+  created_at: string; // ISO datetime
+  id: number;
+  links: Array<ApiLink>;
+  name: string;
+  slug: ApiProjectCategorySlug;
+  updated_at: string; // ISO datetime
+};
+
+type ApiProjectCategoriesMap = Map<ApiProjectId, ApiProjectCategory[]>;
+
+const transformPicture = (
+  picture: ApiProfilePicture | undefined,
+): Picture[] => {
+  return (picture?.links || []).filter((link) =>
     link.href && Object.keys(PICTURE_TYPE_MAPPING).includes(link.rel)
   ).map((link: { href: string; rel: string }) => {
     return {
@@ -28,12 +71,16 @@ const transformPicture = (picture: any): Picture[] => {
   });
 };
 
-// deno-lint-ignore no-explicit-any
-const transformProject = (project: any): Project => {
+const transformProject = (
+  project: ApiProject,
+  allProjectsCategoriesById: ApiProjectCategoriesMap,
+): Project => {
   return {
     id: project.id,
     title: project.title,
-    categories: ["DUMMY_CATEGORY"], // TODO: have to be resolved in 2nd api request
+    categories: allProjectsCategoriesById.get(project.id)?.map(
+      transformProjectCategory,
+    ) || [],
     donationsCount: project.donations_count,
     progressPercentage: project.progress_percentage,
     openAmountInCents: project.open_amount_in_cents,
@@ -41,16 +88,75 @@ const transformProject = (project: any): Project => {
   };
 };
 
-// deno-lint-ignore no-explicit-any
-const transformProjectResponse = (response: any): ProjectsResponse => {
+const parallelFetchProjectsCategories = (
+  apiProjects: Array<ApiProject>,
+): Promise<ApiProjectCategoriesMap> => {
+  return Promise
+    .all(apiProjects.map((apiProject) => {
+      return fetchCategories(apiProject)
+        .then((categories) => {
+          return { id: apiProject.id, categories: categories };
+        });
+    }))
+    .then((allProjectsCategoriesArray) =>
+      new Map(allProjectsCategoriesArray.map((key) => [key.id, key.categories]))
+    );
+};
+
+const transformProjectResponse = async (
+  response: ApiProjectsResponse,
+): Promise<ProjectsResponse> => {
+  const apiProjects = response.data;
+  const allProjectsCategoriesById: ApiProjectCategoriesMap =
+    await parallelFetchProjectsCategories(apiProjects);
   return {
     totalResults: response.total_entries,
     offset: response.offset,
-    projects: response.data.map(transformProject),
+    projects: apiProjects.map((apiProject) =>
+      transformProject(apiProject, allProjectsCategoriesById)
+    ),
   };
 };
 
-export const fetchProjects = async (
+// TODO consider returning an object consisting of at least id + slug so that original category URL can be reconstructed
+//  which could be needed in later stories in which we fetch projects of a given category
+const transformProjectCategory = (
+  apiProjectCategory: ApiProjectCategory,
+): ApiProjectCategorySlug => {
+  return apiProjectCategory.slug;
+};
+
+const fetchCategories = (
+  project: ApiProject,
+): Promise<ApiProjectCategory[]> => {
+  const href = project.links.find((link) => link.rel === "categories")?.href;
+  if (!href) {
+    return Promise.resolve([]);
+  } else {
+    log.debug(`  fetching project categories from ${href}`);
+    return fetch(href)
+      .then((result) => result.json())
+      .then((json) => (json.data as Array<ApiProjectCategory>))
+      .catch((e) => {
+        log.error(
+          `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
+          e,
+        );
+        return [];
+      });
+  }
+};
+
+const _debugP =
+  // deno-lint-ignore no-explicit-any
+  (desc: string | undefined = undefined) => async (elemP: any) => {
+    const elem = await elemP;
+    if (desc) console.debug(desc, elem);
+    else console.debug(elem);
+    return elem;
+  };
+
+export const fetchProjects = (
   { locale = "en", limit = 5, offset = 0 }: ProjectParameters,
 ): Promise<ProjectsResponse> => {
   const page = Math.floor(offset / limit);
@@ -58,13 +164,25 @@ export const fetchProjects = async (
     "facets=completed:false|closed:false|prohibit_donations:false&" +
     `order=rank:DESC&page=${page}&per_page=${limit}`;
   const url = `${BASE_URL}/${locale}/api_v4/projects.json?${params}`;
-  log.debug(`performing request to ${url}`);
-  try {
-    const result = await fetch(url);
-    const parsedResult = await result.json();
-    return transformProjectResponse(parsedResult);
-  } catch (e) {
-    log.error(`Error performing request to ${url}: ${e.message}`);
-    throw e;
-  }
+  const start = Date.now();
+  log.debug(`fetching projects from ${url}`);
+  return fetch(url)
+    .then((result) => result.json())
+    .then(transformProjectResponse)
+    .then((result) => {
+      log.debug(
+        `  fetching projects (including categories) took ${
+          Date.now() - start
+        } ms`,
+      );
+      return result;
+    })
+    .catch((e) => {
+      log.error(
+        `Error performing request to ${url} after ${
+          Date.now() - start
+        } ms: ${e.message}`,
+      );
+      throw e;
+    });
 };

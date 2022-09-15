@@ -122,6 +122,10 @@ There is an official VS Code extension for Deno:
 It should already be enabled for the workspace, for more information check the
 [documentation](https://deno.land/manual/vscode_deno).
 
+JetBrains also offers a
+[plugin](https://plugins.jetbrains.com/plugin/14382-deno) for WebStorm and other
+JetBrains IDEs.
+
 ## Local execution
 
 To watch for file changes during development, run
