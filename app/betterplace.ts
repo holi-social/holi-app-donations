@@ -39,15 +39,15 @@ type ApiProject = {
 };
 
 /** only covers the parts of the API response type that were using */
-type ApiProjectsResponse = {
+export type ApiProjectsResponse = {
   total_entries: number;
   offset: number;
   data: Array<ApiProject>;
 };
 
-type ApiProjectCategorySlug = string;
+export type ApiProjectCategorySlug = string;
 
-type ApiProjectCategory = {
+export type ApiProjectCategory = {
   created_at: string; // ISO datetime
   id: number;
   links: Array<ApiLink>;
