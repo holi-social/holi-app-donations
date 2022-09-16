@@ -19,6 +19,9 @@ import {
   describe,
   it,
 } from "https://deno.land/std@0.155.0/testing/bdd.ts";
+import { middleware } from "./server.ts";
+import { resolveResponse } from "./deps.ts";
+import setupLogging from "./logging.ts";
 
 const emptyResponse = {
   total_entries: 0,
@@ -162,6 +165,29 @@ const categoriesResult = (
   };
 };
 
+const processGqlRequest = (
+  query: string,
+  variables: Record<string, unknown> = {},
+): Promise<Record<string, unknown> | undefined | null> => {
+  const request = new Request("http://localhost:8001/graphql", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "accept": "*/*",
+    },
+    body: JSON.stringify({
+      operationName: null,
+      variables: variables,
+      query: query,
+    }),
+  });
+  return middleware(request)
+    .then(resolveResponse)
+    .then((response) => response.data);
+};
+
+setupLogging("development");
+
 describe("betterplace", () => {
   let fetchStub: Stub;
 
@@ -217,11 +243,27 @@ describe("betterplace", () => {
       ]),
     });
 
-    const result = await fetchProjects({});
+    const promise = processGqlRequest(`
+    {
+        projects {
+            projects {
+                id
+                title
+                categories
+                donationsCount
+                progressPercentage
+                openAmountInCents
+                picture {
+                    type
+                    url
+                }
+            }
+        }
+    }`);
+
+    const result = (await promise)?.projects;
 
     const expectedResult = {
-      totalResults: 123,
-      offset: 20,
       projects: [
         {
           id: 1,
@@ -300,5 +342,9 @@ describe("betterplace", () => {
     const project1 = result.projects.find((p) => p.id === 1);
     assertExists(project1);
     assertEquals(project1.categories, []);
+  });
+
+  it("handles paging correctly", async () => {
+    // TODO has not been working yet, still needs to be implemented
   });
 });

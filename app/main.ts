@@ -1,74 +1,13 @@
-import { fetchCategories, fetchProjects } from "./betterplace.ts";
-import { gql, GraphQLHTTP, log, makeExecutableSchema, Server } from "./deps.ts";
+import { log } from "./deps.ts";
 import setupLogging from "./logging.ts";
-import type { ProjectParameters } from "./types.ts";
-import { Project } from "./types.ts";
+import { createServer } from "./server.ts";
 
 const PORT = 8001;
 
-const typeDefs = gql`
-    type Picture {
-        url: String!
-        type: String!
-    }
+setupLogging(Deno.env.get("ENVIRONMENT") || "development");
 
-    type Project {
-        id: Int!
-        title: String!
-        categories: [String]!
-        donationsCount: Int!
-        progressPercentage: Int!
-        openAmountInCents: Int!
-        picture: [Picture]
-    }
+const server = createServer(PORT);
 
-    interface Pagination {
-        totalResults: Int!
-        offset: Int!
-    }
-
-    type ProjectsResponse implements Pagination {
-        totalResults: Int!
-        offset: Int!
-        projects: [Project]
-    }
-
-    type Query {
-        # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
-        projects(locale: String, limit: Int, offset: Int): ProjectsResponse
-    }
-`;
-
-const resolvers = {
-  Query: {
-    projects: (
-      // deno-lint-ignore no-explicit-any
-      _parent: any,
-      parameters: ProjectParameters = {},
-    ) => fetchProjects(parameters),
-  },
-  Project: {
-    categories: (args: Project) => fetchCategories(args.id),
-  },
-};
-
-setupLogging();
-
-const schema = makeExecutableSchema({ resolvers, typeDefs });
-
-const s = new Server({
-  handler: async (req) => {
-    const { pathname } = new URL(req.url);
-    return pathname === "/graphql"
-      ? await GraphQLHTTP<Request>({
-        schema,
-        graphiql: true,
-      })(req)
-      : new Response("Not Found", { status: 404 });
-  },
-  port: PORT,
-});
-
-s.listenAndServe();
+await server.listenAndServe();
 
 log.info(`Started on http://localhost:${PORT}/graphql`);

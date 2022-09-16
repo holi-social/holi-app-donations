@@ -56,8 +56,6 @@ export type ApiProjectCategory = {
   updated_at: string; // ISO datetime
 };
 
-type ApiProjectCategoriesMap = Map<ApiProjectId, ApiProjectCategory[]>;
-
 const transformPicture = (
   picture: ApiProfilePicture | undefined,
 ): Picture[] => {
@@ -106,7 +104,7 @@ export const fetchCategories = (
   projectId: number,
 ): Promise<string[]> => {
   const href =
-    `https://api.betterplace.org/de/api_v4/projects/${projectId}/categories.json`;
+    `https://api.betterplace.org/en/api_v4/projects/${projectId}/categories.json`;
   log.debug(`  fetching project categories from ${href}`);
   return fetch(href)
     .then((result) => result.json())
@@ -121,14 +119,14 @@ export const fetchCategories = (
     });
 };
 
-const _debugP =
-  // deno-lint-ignore no-explicit-any
-  (desc: string | undefined = undefined) => async (elemP: any) => {
+function _debugP<In>(desc: string | undefined = undefined) {
+  return async (elemP: In) => {
     const elem = await elemP;
     if (desc) console.debug(desc, elem);
     else console.debug(elem);
     return elem;
   };
+}
 
 export const fetchProjects = (
   { locale = "en", limit = 5, offset = 0 }: ProjectParameters,
@@ -144,18 +142,14 @@ export const fetchProjects = (
     .then((result) => result.json())
     .then(transformProjectResponse)
     .then((result) => {
-      log.debug(
-        `  fetching projects (including categories) took ${
-          Date.now() - start
-        } ms`,
-      );
+      const duration = Date.now() - start;
+      log.debug(`  fetching projects took ${duration} ms`);
       return result;
     })
     .catch((e) => {
+      const duration = Date.now() - start;
       log.error(
-        `Error performing request to ${url} after ${
-          Date.now() - start
-        } ms: ${e.message}`,
+        `Error performing request to ${url} after ${duration} ms: ${e.message}`,
       );
       throw e;
     });
