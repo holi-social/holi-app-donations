@@ -73,14 +73,11 @@ const transformPicture = (
 
 const transformProject = (
   project: ApiProject,
-  allProjectsCategoriesById: ApiProjectCategoriesMap,
 ): Project => {
   return {
     id: project.id,
     title: project.title,
-    categories: allProjectsCategoriesById.get(project.id)?.map(
-      transformProjectCategory,
-    ) || [],
+    categories: [], // will be set by separate resolver
     donationsCount: project.donations_count,
     progressPercentage: project.progress_percentage,
     openAmountInCents: project.open_amount_in_cents,
@@ -88,33 +85,14 @@ const transformProject = (
   };
 };
 
-const parallelFetchProjectsCategories = (
-  apiProjects: Array<ApiProject>,
-): Promise<ApiProjectCategoriesMap> => {
-  return Promise
-    .all(apiProjects.map((apiProject) => {
-      return fetchCategories(apiProject)
-        .then((categories) => {
-          return { id: apiProject.id, categories: categories };
-        });
-    }))
-    .then((allProjectsCategoriesArray) =>
-      new Map(allProjectsCategoriesArray.map((key) => [key.id, key.categories]))
-    );
-};
-
-const transformProjectResponse = async (
+const transformProjectResponse = (
   response: ApiProjectsResponse,
-): Promise<ProjectsResponse> => {
+): ProjectsResponse => {
   const apiProjects = response.data;
-  const allProjectsCategoriesById: ApiProjectCategoriesMap =
-    await parallelFetchProjectsCategories(apiProjects);
   return {
     totalResults: response.total_entries,
     offset: response.offset,
-    projects: apiProjects.map((apiProject) =>
-      transformProject(apiProject, allProjectsCategoriesById)
-    ),
+    projects: apiProjects.map(transformProject),
   };
 };
 
@@ -122,29 +100,25 @@ const transformProjectResponse = async (
 //  which could be needed in later stories in which we fetch projects of a given category
 const transformProjectCategory = (
   apiProjectCategory: ApiProjectCategory,
-): ApiProjectCategorySlug => {
-  return apiProjectCategory.slug;
-};
+): string => apiProjectCategory.slug;
 
-const fetchCategories = (
-  project: ApiProject,
-): Promise<ApiProjectCategory[]> => {
-  const href = project.links.find((link) => link.rel === "categories")?.href;
-  if (!href) {
-    return Promise.resolve([]);
-  } else {
-    log.debug(`  fetching project categories from ${href}`);
-    return fetch(href)
-      .then((result) => result.json())
-      .then((json) => (json.data as Array<ApiProjectCategory>))
-      .catch((e) => {
-        log.error(
-          `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
-          e,
-        );
-        return [];
-      });
-  }
+export const fetchCategories = (
+  projectId: number,
+): Promise<string[]> => {
+  const href =
+    `https://api.betterplace.org/de/api_v4/projects/${projectId}/categories.json`;
+  log.debug(`  fetching project categories from ${href}`);
+  return fetch(href)
+    .then((result) => result.json())
+    .then((json) => (json.data as Array<ApiProjectCategory>))
+    .then((categories) => categories.map(transformProjectCategory))
+    .catch((e) => {
+      log.error(
+        `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
+        e,
+      );
+      return [];
+    });
 };
 
 const _debugP =

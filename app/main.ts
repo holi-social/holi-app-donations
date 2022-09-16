@@ -1,41 +1,42 @@
-import { fetchProjects } from "./betterplace.ts";
+import { fetchCategories, fetchProjects } from "./betterplace.ts";
 import { gql, GraphQLHTTP, log, makeExecutableSchema, Server } from "./deps.ts";
 import setupLogging from "./logging.ts";
 import type { ProjectParameters } from "./types.ts";
+import { Project } from "./types.ts";
 
 const PORT = 8001;
 
 const typeDefs = gql`
-  type Picture {
-    url: String!
-    type: String!
-  }
+    type Picture {
+        url: String!
+        type: String!
+    }
 
-  type Project {
-    id: Int!
-    title: String!
-    categories: [String]!
-    donationsCount: Int!
-    progressPercentage: Int!
-    openAmountInCents: Int!
-    picture: [Picture]
-  }
+    type Project {
+        id: Int!
+        title: String!
+        categories: [String]!
+        donationsCount: Int!
+        progressPercentage: Int!
+        openAmountInCents: Int!
+        picture: [Picture]
+    }
 
-  interface Pagination {
-    totalResults: Int!
-    offset: Int!
-  }
+    interface Pagination {
+        totalResults: Int!
+        offset: Int!
+    }
 
-  type ProjectsResponse implements Pagination {
-    totalResults: Int!
-    offset: Int!
-    projects: [Project]
-  }
+    type ProjectsResponse implements Pagination {
+        totalResults: Int!
+        offset: Int!
+        projects: [Project]
+    }
 
-  type Query {
-    # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
-    projects(locale: String, limit: Int, offset: Int): ProjectsResponse
-  }
+    type Query {
+        # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
+        projects(locale: String, limit: Int, offset: Int): ProjectsResponse
+    }
 `;
 
 const resolvers = {
@@ -45,6 +46,9 @@ const resolvers = {
       _parent: any,
       parameters: ProjectParameters = {},
     ) => fetchProjects(parameters),
+  },
+  Project: {
+    categories: (args: Project) => fetchCategories(args.id),
   },
 };
 
