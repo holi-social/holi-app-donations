@@ -6,23 +6,41 @@ export interface ProjectParameters {
   offset?: number;
 }
 
-export type PictureType = "original" | "small";
+export type ProjectPictureType = "original" | "small";
 
-export interface Picture {
+export type CarrierPictureType = "original" | "tiny_square";
+
+export interface ProjectPicture {
   url: string;
-  type: PictureType;
+  fallback: boolean;
+  type: ProjectPictureType;
+}
+
+export interface CarrierPicture {
+  url: string;
+  fallback: boolean;
+  type: CarrierPictureType;
+}
+
+export interface Carrier {
+  id: number;
+  name: string;
+  city: string;
+  picture: CarrierPicture[];
+  url: string | undefined;
 }
 
 export interface Project {
   id: number;
   title: string;
   categories: string[];
+  carrier: Carrier;
   donationsCount: number;
   /** Number between 0 and 100 */
   progressPercentage: number;
   openAmountInCents: number;
   /** The project's "profile picture" in different variants */
-  picture: Picture[];
+  picture: ProjectPicture[];
 }
 
 export interface Pagination {
