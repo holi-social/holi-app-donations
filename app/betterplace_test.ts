@@ -20,7 +20,7 @@ import {
   it,
 } from "https://deno.land/std@0.155.0/testing/bdd.ts";
 import { middleware } from "./server.ts";
-import { resolveResponse } from "./deps.ts";
+import { resolveResponse } from "./dev_deps.ts";
 import setupLogging from "./logging.ts";
 
 const emptyResponse = {
@@ -344,7 +344,8 @@ describe("betterplace", () => {
     assertEquals(project1.categories, []);
   });
 
-  it("handles paging correctly", async () => {
+  it("handles paging correctly", () => {
+    fetchStub = stubFetchByUrlPrefix({});
     // TODO has not been working yet, still needs to be implemented
   });
 });
