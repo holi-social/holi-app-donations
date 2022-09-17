@@ -246,6 +246,8 @@ describe("betterplace", () => {
     const promise = processGqlRequest(`
     {
         projects {
+            totalResults
+            offset
             projects {
                 id
                 title
@@ -264,6 +266,8 @@ describe("betterplace", () => {
     const result = (await promise)?.projects;
 
     const expectedResult = {
+      totalResults: 123,
+      offset: 20,
       projects: [
         {
           id: 1,
@@ -342,10 +346,5 @@ describe("betterplace", () => {
     const project1 = result.projects.find((p) => p.id === 1);
     assertExists(project1);
     assertEquals(project1.categories, []);
-  });
-
-  it("handles paging correctly", () => {
-    fetchStub = stubFetchByUrlPrefix({});
-    // TODO has not been working yet, still needs to be implemented
   });
 });
