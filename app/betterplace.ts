@@ -187,7 +187,7 @@ export const fetchProject = (
     .then(transformProject)
     .then((result) => {
       const duration = Date.now() - start;
-      log.debug(`  fetching project with ID ${id} took ${duration} ms`);
+      log.debug(`fetching project with ID ${id} took ${duration} ms`);
       return result;
     })
     .catch((e) => {
