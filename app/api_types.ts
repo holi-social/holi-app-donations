@@ -23,6 +23,8 @@ export type ApiCarrier = {
 export type ApiProject = {
   id: ApiProjectId;
   title: string;
+  city: string | undefined | null;
+  country: string | undefined | null;
   links: Array<ApiLink>;
   carrier: ApiCarrier;
   donations_count: number;

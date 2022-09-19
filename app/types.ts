@@ -40,6 +40,8 @@ export interface Project {
   id: number;
   title: string;
   categories: string[];
+  city: string | undefined | null;
+  country: string | undefined | null;
   carrier: Carrier;
   donationsCount: number;
   /** Number between 0 and 100 */

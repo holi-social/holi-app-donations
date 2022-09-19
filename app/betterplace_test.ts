@@ -113,6 +113,8 @@ const apiProjectCarrier2: ApiCarrier = {
 const apiProject1: ApiProject = {
   id: 1,
   title: "Project 1",
+  city: "Kiew",
+  country: "Ukraine",
   donations_count: 42,
   progress_percentage: 33,
   open_amount_in_cents: 421234,
@@ -142,6 +144,8 @@ const apiProject1: ApiProject = {
 const apiProject2: ApiProject = {
   id: 2,
   title: "Project 2",
+  city: "Kiew",
+  country: "Ukraine",
   donations_count: 13,
   progress_percentage: 10,
   open_amount_in_cents: 1234567,
@@ -158,6 +162,8 @@ const apiProject2: ApiProject = {
 const apiProject3: ApiProject = {
   id: 3,
   title: "Project 3",
+  city: "Kiew",
+  country: null,
   donations_count: 0,
   progress_percentage: 0,
   open_amount_in_cents: 4200000,
@@ -174,6 +180,8 @@ const apiProject3: ApiProject = {
 const apiProject4: ApiProject = {
   id: 4,
   title: "Project 4",
+  city: null,
+  country: "Ukraine",
   donations_count: 0,
   progress_percentage: 0,
   open_amount_in_cents: 1200000,
@@ -315,6 +323,8 @@ describe("betterplace", () => {
             projects {
                 id
                 title
+                city
+                country
                 categories
                 donationsCount
                 progressPercentage
@@ -384,6 +394,8 @@ describe("betterplace", () => {
         {
           id: 1,
           title: "Project 1",
+          city: "Kiew",
+          country: "Ukraine",
           categories: ["education"],
           donationsCount: 42,
           progressPercentage: 33,
@@ -403,6 +415,8 @@ describe("betterplace", () => {
         {
           id: 2,
           title: "Project 2",
+          city: "Kiew",
+          country: "Ukraine",
           categories: ["popular"],
           donationsCount: 13,
           progressPercentage: 10,
@@ -413,6 +427,8 @@ describe("betterplace", () => {
         {
           id: 3,
           title: "Project 3",
+          city: "Kiew",
+          country: null,
           categories: ["education", "popular"],
           donationsCount: 0,
           progressPercentage: 0,
@@ -423,6 +439,8 @@ describe("betterplace", () => {
         {
           id: 4,
           title: "Project 4",
+          city: null,
+          country: "Ukraine",
           categories: ["education", "popular"],
           donationsCount: 0,
           progressPercentage: 0,
