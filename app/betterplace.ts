@@ -1,72 +1,92 @@
 import { log } from "./deps.ts";
 import {
-  Picture,
-  PictureType,
+  Carrier,
+  CarrierPicture,
+  CarrierPictureType,
   Project,
   ProjectParameters,
+  ProjectPicture,
+  ProjectPictureType,
   ProjectsResponse,
 } from "./types.ts";
+import {
+  ApiCarrier,
+  ApiLink,
+  ApiPicture,
+  ApiProject,
+  ApiProjectCategory,
+  ApiProjectsResponse,
+} from "./api_types.ts";
 
 const BASE_URL = "https://api.betterplace.org";
 
-const PICTURE_TYPE_MAPPING: {
-  [key: string]: PictureType;
+const PROJECT_PICTURE_TYPE_MAPPING: {
+  [key: string]: ProjectPictureType;
 } = {
   original: "original",
   fill_410x214: "small",
 };
 
-type ApiProjectId = number;
-
-type ApiLink = {
-  href: string;
-  rel: string;
+const CARRIER_PICTURE_TYPE_MAPPING: {
+  [key: string]: CarrierPictureType;
+} = {
+  original: "original",
+  fill_100x100: "tiny_square",
 };
 
-type ApiProfilePicture = {
-  links: Array<ApiLink>;
+const transformProjectPicture = (
+  picture: ApiPicture | undefined,
+): ProjectPicture[] => {
+  if (!picture) {
+    return [];
+  }
+  const relTypeRelevant = (link: ApiLink): boolean => {
+    return !!link.href &&
+      Object.keys(PROJECT_PICTURE_TYPE_MAPPING).includes(link.rel);
+  };
+  return picture.links
+    .filter(relTypeRelevant)
+    .map((link: ApiLink) => {
+      return {
+        url: link.href,
+        type: PROJECT_PICTURE_TYPE_MAPPING[link.rel],
+        fallback: picture.fallback || false,
+      };
+    });
 };
 
-/** only covers the parts of the API response type that were using */
-type ApiProject = {
-  id: ApiProjectId;
-  title: string;
-  links: Array<ApiLink>;
-  donations_count: number;
-  progress_percentage: number;
-  open_amount_in_cents: number;
-  profile_picture: ApiProfilePicture | undefined;
+const transformCarrierPicture = (
+  picture: ApiPicture | undefined,
+): CarrierPicture[] => {
+  if (!picture) {
+    return [];
+  }
+  const relTypeRelevant = (link: ApiLink): boolean => {
+    return !!link.href &&
+      Object.keys(CARRIER_PICTURE_TYPE_MAPPING).includes(link.rel);
+  };
+  return picture.links
+    .filter(relTypeRelevant)
+    .map((link: ApiLink) => {
+      return {
+        url: link.href,
+        type: CARRIER_PICTURE_TYPE_MAPPING[link.rel],
+        fallback: picture.fallback || false,
+      };
+    });
 };
 
-/** only covers the parts of the API response type that were using */
-export type ApiProjectsResponse = {
-  total_entries: number;
-  offset: number;
-  data: Array<ApiProject>;
-};
-
-export type ApiProjectCategorySlug = string;
-
-export type ApiProjectCategory = {
-  created_at: string; // ISO datetime
-  id: number;
-  links: Array<ApiLink>;
-  name: string;
-  slug: ApiProjectCategorySlug;
-  updated_at: string; // ISO datetime
-};
-
-const transformPicture = (
-  picture: ApiProfilePicture | undefined,
-): Picture[] => {
-  return (picture?.links || []).filter((link) =>
-    link.href && Object.keys(PICTURE_TYPE_MAPPING).includes(link.rel)
-  ).map((link: { href: string; rel: string }) => {
-    return {
-      url: link.href,
-      type: PICTURE_TYPE_MAPPING[link.rel],
-    };
-  });
+const transformCarrier = (
+  carrier: ApiCarrier,
+): Carrier => {
+  return {
+    id: carrier.id,
+    name: carrier.name,
+    city: carrier.city,
+    country: carrier.country,
+    url: carrier.links.find((l) => l.rel === "self")?.href,
+    picture: transformCarrierPicture(carrier.picture),
+  };
 };
 
 const transformProject = (
@@ -76,10 +96,11 @@ const transformProject = (
     id: project.id,
     title: project.title,
     categories: [], // will be set by separate resolver
+    carrier: transformCarrier(project.carrier),
     donationsCount: project.donations_count,
     progressPercentage: project.progress_percentage,
     openAmountInCents: project.open_amount_in_cents,
-    picture: transformPicture(project.profile_picture),
+    picture: transformProjectPicture(project.profile_picture),
   };
 };
 
