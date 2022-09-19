@@ -11,6 +11,15 @@ const typeDefs = gql`
         type: String!
     }
 
+    type Carrier {
+        id: Int!
+        name: String!
+        city: String!
+        country: String!
+        picture: [Picture]
+        url: String
+    }
+
     type Project {
         id: Int!
         title: String!
@@ -19,6 +28,7 @@ const typeDefs = gql`
         progressPercentage: Int!
         openAmountInCents: Int!
         picture: [Picture]
+        carrier: Carrier!
     }
 
     interface Pagination {

@@ -9,11 +9,7 @@ import {
   assertExists,
   assertRejects,
 } from "https://deno.land/std@0.155.0/testing/asserts.ts";
-import {
-  ApiProjectCategory,
-  ApiProjectsResponse,
-  fetchProjects,
-} from "./betterplace.ts";
+import { fetchProjects } from "./betterplace.ts";
 import {
   afterEach,
   describe,
@@ -22,6 +18,11 @@ import {
 import { middleware } from "./server.ts";
 import { resolveResponse } from "./dev_deps.ts";
 import setupLogging from "./logging.ts";
+import {
+  ApiCarrier,
+  ApiProjectCategory,
+  ApiProjectsResponse,
+} from "./api_types.ts";
 
 const emptyResponse = {
   total_entries: 0,
@@ -52,6 +53,60 @@ const stubFetchByUrlPrefix = (
     }
     throw Promise.reject(new Error(`Unexpected request URL "${input}"`));
   });
+};
+
+const apiProjectCarrier1: ApiCarrier = {
+  id: 45,
+  name: "Carrier 1",
+  city: "Berlin",
+  country: "Deutschland",
+  picture: {
+    links: [
+      {
+        "rel": "fill_100x100",
+        "href":
+          "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/000/045/fill_100x100_original_ARCHE_Logo_rgb_pos.jpg",
+      },
+      {
+        "rel": "original",
+        "href":
+          "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/000/045/crop_original_original_ARCHE_Logo_rgb_pos.jpg",
+      },
+    ],
+  },
+  links: [
+    {
+      "rel": "self",
+      "href": "https://api.betterplace.org/de/api_v4/organisations/45.json",
+    },
+  ],
+};
+
+const apiProjectCarrier2: ApiCarrier = {
+  id: 25417,
+  name: "Carrier 2",
+  city: "Berlin",
+  country: "Deutschland",
+  picture: {
+    links: [
+      {
+        "rel": "fill_100x100",
+        "href":
+          "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/025/417/fill_100x100_sea_watch_logo.png",
+      },
+      {
+        "rel": "original",
+        "href":
+          "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/025/417/crop_original_sea_watch_logo.png",
+      },
+    ],
+  },
+  links: [
+    {
+      "rel": "self",
+      "href": "https://api.betterplace.org/de/api_v4/organisations/25417.json",
+    },
+  ],
 };
 
 const apiProjectsResult: ApiProjectsResponse = {
@@ -85,6 +140,7 @@ const apiProjectsResult: ApiProjectsResponse = {
         "href":
           "https://api.betterplace.org/en/api_v4/projects/1/categories.json",
       }],
+      carrier: apiProjectCarrier1,
     },
     {
       id: 2,
@@ -100,6 +156,7 @@ const apiProjectsResult: ApiProjectsResponse = {
         "href":
           "https://api.betterplace.org/en/api_v4/projects/2/categories.json",
       }],
+      carrier: apiProjectCarrier1,
     },
     {
       id: 3,
@@ -115,6 +172,7 @@ const apiProjectsResult: ApiProjectsResponse = {
         "href":
           "https://api.betterplace.org/en/api_v4/projects/3/categories.json",
       }],
+      carrier: apiProjectCarrier2,
     },
     {
       id: 4,
@@ -130,6 +188,7 @@ const apiProjectsResult: ApiProjectsResponse = {
         "href":
           "https://api.betterplace.org/en/api_v4/projects/4/categories.json",
       }],
+      carrier: apiProjectCarrier2,
     },
   ],
 };
@@ -259,11 +318,59 @@ describe("betterplace", () => {
                     type
                     url
                 }
+                carrier {
+                  id
+                  name
+                  city
+                  picture {
+                    url
+                    type
+                  }
+                  url
+                }
             }
         }
     }`);
 
     const result = (await promise)?.projects;
+
+    const expectedCarrier1 = {
+      city: "Berlin",
+      id: 45,
+      name: "Carrier 1",
+      picture: [
+        {
+          type: "tiny_square",
+          url:
+            "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/000/045/fill_100x100_original_ARCHE_Logo_rgb_pos.jpg",
+        },
+        {
+          type: "original",
+          url:
+            "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/000/045/crop_original_original_ARCHE_Logo_rgb_pos.jpg",
+        },
+      ],
+      url: "https://api.betterplace.org/de/api_v4/organisations/45.json",
+    };
+
+    const expectedCarrier2 = {
+      city: "Berlin",
+      id: 25417,
+      name: "Carrier 2",
+      picture: [
+        {
+          type: "tiny_square",
+          url:
+            "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/025/417/fill_100x100_sea_watch_logo.png",
+        },
+        {
+          type: "original",
+          url:
+            "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/025/417/crop_original_sea_watch_logo.png",
+        },
+      ],
+      url: "https://api.betterplace.org/de/api_v4/organisations/25417.json",
+    };
 
     const expectedResult = {
       totalResults: 123,
@@ -286,6 +393,7 @@ describe("betterplace", () => {
               "url": "https://www.example.com/image1.jpg",
             },
           ],
+          carrier: expectedCarrier1,
         },
         {
           id: 2,
@@ -295,6 +403,7 @@ describe("betterplace", () => {
           progressPercentage: 10,
           openAmountInCents: 1234567,
           picture: [],
+          carrier: expectedCarrier1,
         },
         {
           id: 3,
@@ -304,6 +413,7 @@ describe("betterplace", () => {
           progressPercentage: 0,
           openAmountInCents: 4200000,
           picture: [],
+          carrier: expectedCarrier2,
         },
         {
           id: 4,
@@ -313,6 +423,7 @@ describe("betterplace", () => {
           progressPercentage: 0,
           openAmountInCents: 1200000,
           picture: [],
+          carrier: expectedCarrier2,
         },
       ],
     };
