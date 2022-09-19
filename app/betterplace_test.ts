@@ -9,7 +9,7 @@ import {
   assertExists,
   assertRejects,
 } from "https://deno.land/std@0.155.0/testing/asserts.ts";
-import { fetchProjects } from "./betterplace.ts";
+import { fetchProject, fetchProjects } from "./betterplace.ts";
 import {
   afterEach,
   describe,
@@ -20,6 +20,7 @@ import { resolveResponse } from "./dev_deps.ts";
 import setupLogging from "./logging.ts";
 import {
   ApiCarrier,
+  ApiProject,
   ApiProjectCategory,
   ApiProjectsResponse,
 } from "./api_types.ts";
@@ -109,87 +110,91 @@ const apiProjectCarrier2: ApiCarrier = {
   ],
 };
 
+const apiProject1: ApiProject = {
+  id: 1,
+  title: "Project 1",
+  donations_count: 42,
+  progress_percentage: 33,
+  open_amount_in_cents: 421234,
+  profile_picture: {
+    links: [
+      {
+        "rel": "fill_100x100",
+        "href": "https://www.example.com/image1_resized2.jpg",
+      },
+      {
+        "rel": "fill_410x214",
+        "href": "https://www.example.com/image1_resized1.jpg",
+      },
+      {
+        "rel": "original",
+        "href": "https://www.example.com/image1.jpg",
+      },
+    ],
+  },
+  links: [{
+    "rel": "categories",
+    "href": "https://api.betterplace.org/en/api_v4/projects/1/categories.json",
+  }],
+  carrier: apiProjectCarrier1,
+};
+
+const apiProject2: ApiProject = {
+  id: 2,
+  title: "Project 2",
+  donations_count: 13,
+  progress_percentage: 10,
+  open_amount_in_cents: 1234567,
+  profile_picture: {
+    links: [],
+  },
+  links: [{
+    "rel": "categories",
+    "href": "https://api.betterplace.org/en/api_v4/projects/2/categories.json",
+  }],
+  carrier: apiProjectCarrier1,
+};
+
+const apiProject3: ApiProject = {
+  id: 3,
+  title: "Project 3",
+  donations_count: 0,
+  progress_percentage: 0,
+  open_amount_in_cents: 4200000,
+  profile_picture: {
+    links: [],
+  },
+  links: [{
+    "rel": "categories",
+    "href": "https://api.betterplace.org/en/api_v4/projects/3/categories.json",
+  }],
+  carrier: apiProjectCarrier2,
+};
+
+const apiProject4: ApiProject = {
+  id: 4,
+  title: "Project 4",
+  donations_count: 0,
+  progress_percentage: 0,
+  open_amount_in_cents: 1200000,
+  profile_picture: {
+    links: [],
+  },
+  links: [{
+    "rel": "categories",
+    "href": "https://api.betterplace.org/en/api_v4/projects/4/categories.json",
+  }],
+  carrier: apiProjectCarrier2,
+};
+
 const apiProjectsResult: ApiProjectsResponse = {
   total_entries: 123,
   offset: 20,
   data: [
-    {
-      id: 1,
-      title: "Project 1",
-      donations_count: 42,
-      progress_percentage: 33,
-      open_amount_in_cents: 421234,
-      profile_picture: {
-        links: [
-          {
-            "rel": "fill_100x100",
-            "href": "https://www.example.com/image1_resized2.jpg",
-          },
-          {
-            "rel": "fill_410x214",
-            "href": "https://www.example.com/image1_resized1.jpg",
-          },
-          {
-            "rel": "original",
-            "href": "https://www.example.com/image1.jpg",
-          },
-        ],
-      },
-      links: [{
-        "rel": "categories",
-        "href":
-          "https://api.betterplace.org/en/api_v4/projects/1/categories.json",
-      }],
-      carrier: apiProjectCarrier1,
-    },
-    {
-      id: 2,
-      title: "Project 2",
-      donations_count: 13,
-      progress_percentage: 10,
-      open_amount_in_cents: 1234567,
-      profile_picture: {
-        links: [],
-      },
-      links: [{
-        "rel": "categories",
-        "href":
-          "https://api.betterplace.org/en/api_v4/projects/2/categories.json",
-      }],
-      carrier: apiProjectCarrier1,
-    },
-    {
-      id: 3,
-      title: "Project 3",
-      donations_count: 0,
-      progress_percentage: 0,
-      open_amount_in_cents: 4200000,
-      profile_picture: {
-        links: [],
-      },
-      links: [{
-        "rel": "categories",
-        "href":
-          "https://api.betterplace.org/en/api_v4/projects/3/categories.json",
-      }],
-      carrier: apiProjectCarrier2,
-    },
-    {
-      id: 4,
-      title: "Project 4",
-      donations_count: 0,
-      progress_percentage: 0,
-      open_amount_in_cents: 1200000,
-      profile_picture: {
-        links: [],
-      },
-      links: [{
-        "rel": "categories",
-        "href":
-          "https://api.betterplace.org/en/api_v4/projects/4/categories.json",
-      }],
-      carrier: apiProjectCarrier2,
-    },
+    apiProject1,
+    apiProject2,
+    apiProject3,
+    apiProject4,
   ],
 };
 
@@ -430,7 +435,89 @@ describe("betterplace", () => {
     assertEquals(result, expectedResult);
   });
 
-  it("throws error for invalid response", async () => {
+  it("correctly retrieves a project by ID", async () => {
+    fetchStub = stubFetchByUrlPrefix({
+      "https://api.betterplace.org/en/api_v4/projects/1.json": apiProject1,
+      "https://api.betterplace.org/en/api_v4/projects/1/categories.json":
+        categoriesResult([
+          categoryEducation,
+        ]),
+    });
+
+    const promise = processGqlRequest(
+      `
+    query ProjectById($id:Int!) {
+      project(id:$id) {
+        id
+        title
+        categories
+        donationsCount
+        progressPercentage
+        openAmountInCents
+        picture {
+          type
+          url
+        }
+        carrier {
+          id
+          name
+          city
+          picture {
+            url
+            type
+          }
+          url
+        }
+      }
+    }`,
+      { id: apiProject1.id },
+    );
+
+    const result = (await promise)?.project;
+
+    const expectedCarrier1 = {
+      city: "Berlin",
+      id: 45,
+      name: "Carrier 1",
+      picture: [
+        {
+          type: "tiny_square",
+          url:
+            "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/000/045/fill_100x100_original_ARCHE_Logo_rgb_pos.jpg",
+        },
+        {
+          type: "original",
+          url:
+            "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/000/045/crop_original_original_ARCHE_Logo_rgb_pos.jpg",
+        },
+      ],
+      url: "https://api.betterplace.org/de/api_v4/organisations/45.json",
+    };
+
+    const expectedResult = {
+      id: 1,
+      title: "Project 1",
+      categories: ["education"],
+      donationsCount: 42,
+      progressPercentage: 33,
+      openAmountInCents: 421234,
+      picture: [
+        {
+          "type": "small",
+          "url": "https://www.example.com/image1_resized1.jpg",
+        },
+        {
+          "type": "original",
+          "url": "https://www.example.com/image1.jpg",
+        },
+      ],
+      carrier: expectedCarrier1,
+    };
+
+    assertEquals(result, expectedResult);
+  });
+
+  it("throws error for invalid projects response", async () => {
     fetchStub = stub(
       globalThis,
       "fetch",
@@ -438,6 +525,16 @@ describe("betterplace", () => {
     );
 
     await assertRejects(() => fetchProjects({}));
+  });
+
+  it("throws error for invalid project response", async () => {
+    fetchStub = stub(
+      globalThis,
+      "fetch",
+      returnsNext([Promise.resolve(new Response("foobar"))]),
+    );
+
+    await assertRejects(() => fetchProject({ id: 123 }));
   });
 
   it("returns empty categories for invalid category responses", async () => {
