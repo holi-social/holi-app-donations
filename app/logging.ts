@@ -1,8 +1,6 @@
 import { log } from "./deps.ts";
 
-const environment = Deno.env.get("ENVIRONMENT") || "development";
-
-const setupLogging = () =>
+const setupLogging = (environment: string) =>
   log.setup({
     handlers: {
       default: new log.handlers.ConsoleHandler("DEBUG", {
