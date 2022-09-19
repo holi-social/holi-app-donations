@@ -468,6 +468,8 @@ describe("betterplace", () => {
       project(id:$id) {
         id
         title
+        city
+        country
         categories
         donationsCount
         progressPercentage
@@ -515,6 +517,8 @@ describe("betterplace", () => {
     const expectedResult = {
       id: 1,
       title: "Project 1",
+      city: "Kiew",
+      country: "Ukraine",
       categories: ["education"],
       donationsCount: 42,
       progressPercentage: 33,
