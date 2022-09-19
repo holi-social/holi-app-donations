@@ -7,6 +7,7 @@ import {
   ProjectParameters,
   ProjectPicture,
   ProjectPictureType,
+  ProjectsParameters,
   ProjectsResponse,
 } from "./types.ts";
 import {
@@ -149,7 +150,7 @@ function _debugP<In>(desc: string | undefined = undefined) {
 }
 
 export const fetchProjects = (
-  { locale = "en", limit = 5, offset = 0 }: ProjectParameters,
+  { locale = "en", limit = 5, offset = 0 }: ProjectsParameters,
 ): Promise<ProjectsResponse> => {
   const page = Math.floor(offset / limit);
   const params =
@@ -164,6 +165,28 @@ export const fetchProjects = (
     .then((result) => {
       const duration = Date.now() - start;
       log.debug(`  fetching projects took ${duration} ms`);
+      return result;
+    })
+    .catch((e) => {
+      const duration = Date.now() - start;
+      log.error(
+        `Error performing request to ${url} after ${duration} ms: ${e.message}`,
+      );
+      throw e;
+    });
+};
+
+export const fetchProject = (
+  { id, locale = "en" }: ProjectParameters,
+): Promise<Project> => {
+  const url = `${BASE_URL}/${locale}/api_v4/projects/${id}.json`;
+  const start = Date.now();
+  return fetch(url)
+    .then((result) => result.json())
+    .then(transformProject)
+    .then((result) => {
+      const duration = Date.now() - start;
+      log.debug(`  fetching project with ID ${id} took ${duration} ms`);
       return result;
     })
     .catch((e) => {

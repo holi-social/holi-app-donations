@@ -1,6 +1,6 @@
 import { gql } from "https://deno.land/x/graphql_tag@0.0.1/mod.ts";
-import { Project, ProjectParameters } from "./types.ts";
-import { fetchCategories, fetchProjects } from "./betterplace.ts";
+import { Project, ProjectParameters, ProjectsParameters } from "./types.ts";
+import { fetchCategories, fetchProject, fetchProjects } from "./betterplace.ts";
 import { makeExecutableSchema } from "https://deno.land/x/graphql_tools@0.0.2/schema/makeExecutableSchema.ts";
 import { GraphQLHTTP } from "https://deno.land/x/gql@1.1.2/http.ts";
 import { Server } from "https://deno.land/std@0.155.0/http/server.ts";
@@ -43,7 +43,8 @@ const typeDefs = gql`
 
     type Query {
         # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
-        projects(locale: String, limit: Int, offset: Int): ProjectsResponse
+        projects(locale: String, limit: Int, offset: Int): ProjectsResponse!
+        project(id: Int!): Project!
     }
 `;
 
@@ -52,8 +53,13 @@ const resolvers = {
     projects: (
       // deno-lint-ignore no-explicit-any
       _parent: any,
-      parameters: ProjectParameters = {},
+      parameters: ProjectsParameters = {},
     ) => fetchProjects(parameters),
+    project: (
+      // deno-lint-ignore no-explicit-any
+      _parent: any,
+      parameters: ProjectParameters,
+    ) => fetchProject(parameters),
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),

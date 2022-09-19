@@ -1,9 +1,14 @@
 export type Locale = "de" | "en";
 
-export interface ProjectParameters {
+export interface ProjectsParameters {
   locale?: Locale;
   limit?: number;
   offset?: number;
+}
+
+export interface ProjectParameters {
+  locale?: Locale;
+  id: number;
 }
 
 export type ProjectPictureType = "original" | "small";
