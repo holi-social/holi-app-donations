@@ -83,6 +83,7 @@ const transformCarrier = (
     id: carrier.id,
     name: carrier.name,
     city: carrier.city,
+    country: carrier.country,
     url: carrier.links.find((l) => l.rel === "self")?.href,
     picture: transformCarrierPicture(carrier.picture),
   };

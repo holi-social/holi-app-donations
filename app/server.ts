@@ -15,6 +15,7 @@ const typeDefs = gql`
         id: Int!
         name: String!
         city: String!
+        country: String!
         picture: [Picture]
         url: String
     }

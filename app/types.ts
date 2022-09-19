@@ -26,6 +26,7 @@ export interface Carrier {
   id: number;
   name: string;
   city: string;
+  country: string;
   picture: CarrierPicture[];
   url: string | undefined;
 }
