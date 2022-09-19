@@ -24,6 +24,8 @@ const typeDefs = gql`
         id: Int!
         title: String!
         categories: [String]!
+        city: String
+        country: String
         donationsCount: Int!
         progressPercentage: Int!
         openAmountInCents: Int!
