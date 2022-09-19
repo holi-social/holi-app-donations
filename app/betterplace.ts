@@ -96,6 +96,8 @@ const transformProject = (
   return {
     id: project.id,
     title: project.title,
+    city: project.city,
+    country: project.country,
     categories: [], // will be set by separate resolver
     carrier: transformCarrier(project.carrier),
     donationsCount: project.donations_count,
