@@ -6,15 +6,14 @@ export type ApiLink = {
 };
 
 export type ApiPicture = {
-  fallback?: boolean;
   links: Array<ApiLink>;
 };
 
 export type ApiCarrier = {
   id: number;
   name: string;
-  city: string;
-  country: string;
+  city: string | undefined | null;
+  country: string | undefined | null;
   links: Array<ApiLink>;
   picture: ApiPicture;
 };
@@ -31,6 +30,8 @@ export type ApiProject = {
   progress_percentage: number;
   open_amount_in_cents: number;
   profile_picture: ApiPicture | undefined;
+  summary: string | undefined | null;
+  description: string | undefined | null;
 };
 
 /** only covers the parts of the API response type that were using */
@@ -49,4 +50,8 @@ export type ApiProjectCategory = {
   name: string;
   slug: ApiProjectCategorySlug;
   updated_at: string; // ISO datetime
+};
+
+export type ApiOrganisation = {
+  links: Array<ApiLink>;
 };

@@ -13,27 +13,25 @@ export interface ProjectParameters {
 
 export type ProjectPictureType = "original" | "small";
 
-export type CarrierPictureType = "original" | "tiny_square";
+export type InitiativePictureType = "original" | "tiny_square";
 
 export interface ProjectPicture {
   url: string;
-  fallback: boolean;
   type: ProjectPictureType;
 }
 
-export interface CarrierPicture {
+export interface InitiativePicture {
   url: string;
-  fallback: boolean;
-  type: CarrierPictureType;
+  type: InitiativePictureType;
 }
 
-export interface Carrier {
+export interface Initiative {
   id: number;
   name: string;
-  city: string;
-  country: string;
-  picture: CarrierPicture[];
-  url: string | undefined;
+  city: string | undefined | null;
+  country: string | undefined | null;
+  picture: InitiativePicture[];
+  url?: string;
 }
 
 export interface Project {
@@ -42,13 +40,15 @@ export interface Project {
   categories: string[];
   city: string | undefined | null;
   country: string | undefined | null;
-  carrier: Carrier;
+  initiative: Initiative;
   donationsCount: number;
   /** Number between 0 and 100 */
   progressPercentage: number;
   openAmountInCents: number;
   /** The project's "profile picture" in different variants */
   picture: ProjectPicture[];
+  summary: string | undefined | null;
+  description: string | undefined | null;
 }
 
 export interface Pagination {
