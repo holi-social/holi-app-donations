@@ -1,4 +1,4 @@
-import { log } from "./deps.ts";
+import { log, Parser } from "./deps.ts";
 import {
   Initiative,
   InitiativePicture,
@@ -34,6 +34,22 @@ const INITIATIVE_PICTURE_TYPE_MAPPING: {
 } = {
   original: "original",
   fill_100x100: "tiny_square",
+};
+
+const cleanUpHtml = (html: string): string => {
+  let result = "";
+  const parser = new Parser({
+    onopentag: (name) => {
+      if (name === "br") {
+        result += "\n";
+      }
+    },
+    ontext: (text) => {
+      result += text;
+    },
+  });
+  parser.end(html);
+  return result;
 };
 
 const transformProjectPicture = (
@@ -104,8 +120,7 @@ const transformProject = (
     openAmountInCents: project.open_amount_in_cents,
     picture: transformProjectPicture(project.profile_picture),
     summary: project.summary,
-    // TODO: clean up html tags
-    description: project.description,
+    description: project.description && cleanUpHtml(project.description),
   };
 };
 
