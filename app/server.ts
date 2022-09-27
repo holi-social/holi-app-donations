@@ -1,6 +1,16 @@
 import { gql } from "https://deno.land/x/graphql_tag@0.0.1/mod.ts";
-import { Project, ProjectParameters, ProjectsParameters } from "./types.ts";
-import { fetchCategories, fetchProject, fetchProjects } from "./betterplace.ts";
+import {
+  Initiative,
+  Project,
+  ProjectParameters,
+  ProjectsParameters,
+} from "./types.ts";
+import {
+  fetchCategories,
+  fetchInitiativeUrl,
+  fetchProject,
+  fetchProjects,
+} from "./betterplace.ts";
 import { makeExecutableSchema } from "https://deno.land/x/graphql_tools@0.0.2/schema/makeExecutableSchema.ts";
 import { GraphQLHTTP } from "https://deno.land/x/gql@1.1.2/http.ts";
 import { Server } from "https://deno.land/std@0.155.0/http/server.ts";
@@ -11,7 +21,7 @@ const typeDefs = gql`
         type: String!
     }
 
-    type Carrier {
+    type Initiative {
         id: Int!
         name: String!
         city: String!
@@ -30,7 +40,9 @@ const typeDefs = gql`
         progressPercentage: Int!
         openAmountInCents: Int!
         picture: [Picture]
-        carrier: Carrier!
+        initiative: Initiative!
+        summary: String
+        description: String
     }
 
     interface Pagination {
@@ -66,6 +78,9 @@ const resolvers = {
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),
+  },
+  Initiative: {
+    url: (args: Initiative) => fetchInitiativeUrl(args),
   },
 };
 
