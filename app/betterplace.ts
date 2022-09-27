@@ -72,7 +72,7 @@ const transformProjectPicture = (
     });
 };
 
-const transformCarrierPicture = (
+const transformInitiativePicture = (
   picture: ApiPicture | undefined,
 ): InitiativePicture[] => {
   if (!picture) {
@@ -101,7 +101,7 @@ const transformCarrier = (
     city: carrier.city,
     country: carrier.country,
     url: carrier.links.find((l) => l.rel === "self")?.href, // will be replaced by separate resolver resp. used as fallback
-    picture: transformCarrierPicture(carrier.picture),
+    picture: transformInitiativePicture(carrier.picture),
   };
 };
 
