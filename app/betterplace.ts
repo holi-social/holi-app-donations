@@ -1,8 +1,8 @@
-import { log } from "./deps.ts";
+import { log, Parser } from "./deps.ts";
 import {
-  Carrier,
-  CarrierPicture,
-  CarrierPictureType,
+  Initiative,
+  InitiativePicture,
+  InitiativePictureType,
   Project,
   ProjectParameters,
   ProjectPicture,
@@ -13,6 +13,7 @@ import {
 import {
   ApiCarrier,
   ApiLink,
+  ApiOrganisation,
   ApiPicture,
   ApiProject,
   ApiProjectCategory,
@@ -28,11 +29,27 @@ const PROJECT_PICTURE_TYPE_MAPPING: {
   fill_410x214: "small",
 };
 
-const CARRIER_PICTURE_TYPE_MAPPING: {
-  [key: string]: CarrierPictureType;
+const INITIATIVE_PICTURE_TYPE_MAPPING: {
+  [key: string]: InitiativePictureType;
 } = {
   original: "original",
   fill_100x100: "tiny_square",
+};
+
+const cleanUpHtml = (html: string): string => {
+  let result = "";
+  const parser = new Parser({
+    onopentag: (name) => {
+      if (name === "br") {
+        result += "\n";
+      }
+    },
+    ontext: (text) => {
+      result += text;
+    },
+  });
+  parser.end(html);
+  return result;
 };
 
 const transformProjectPicture = (
@@ -51,42 +68,40 @@ const transformProjectPicture = (
       return {
         url: link.href,
         type: PROJECT_PICTURE_TYPE_MAPPING[link.rel],
-        fallback: picture.fallback || false,
       };
     });
 };
 
-const transformCarrierPicture = (
+const transformInitiativePicture = (
   picture: ApiPicture | undefined,
-): CarrierPicture[] => {
+): InitiativePicture[] => {
   if (!picture) {
     return [];
   }
   const relTypeRelevant = (link: ApiLink): boolean => {
     return !!link.href &&
-      Object.keys(CARRIER_PICTURE_TYPE_MAPPING).includes(link.rel);
+      Object.keys(INITIATIVE_PICTURE_TYPE_MAPPING).includes(link.rel);
   };
   return picture.links
     .filter(relTypeRelevant)
     .map((link: ApiLink) => {
       return {
         url: link.href,
-        type: CARRIER_PICTURE_TYPE_MAPPING[link.rel],
-        fallback: picture.fallback || false,
+        type: INITIATIVE_PICTURE_TYPE_MAPPING[link.rel],
       };
     });
 };
 
 const transformCarrier = (
   carrier: ApiCarrier,
-): Carrier => {
+): Initiative => {
   return {
     id: carrier.id,
     name: carrier.name,
     city: carrier.city,
     country: carrier.country,
-    url: carrier.links.find((l) => l.rel === "self")?.href,
-    picture: transformCarrierPicture(carrier.picture),
+    url: carrier.links.find((l) => l.rel === "self")?.href, // will be replaced by separate resolver resp. used as fallback
+    picture: transformInitiativePicture(carrier.picture),
   };
 };
 
@@ -99,11 +114,13 @@ const transformProject = (
     city: project.city,
     country: project.country,
     categories: [], // will be set by separate resolver
-    carrier: transformCarrier(project.carrier),
+    initiative: transformCarrier(project.carrier),
     donationsCount: project.donations_count,
     progressPercentage: project.progress_percentage,
     openAmountInCents: project.open_amount_in_cents,
     picture: transformProjectPicture(project.profile_picture),
+    summary: project.summary,
+    description: project.description && cleanUpHtml(project.description),
   };
 };
 
@@ -140,6 +157,26 @@ export const fetchCategories = (
         e,
       );
       return [];
+    });
+};
+
+export const fetchInitiativeUrl = (
+  initiative: Initiative,
+): Promise<string | undefined> => {
+  if (!initiative.url) {
+    return Promise.resolve(initiative.url);
+  }
+  return fetch(initiative.url)
+    .then((result) => result.json())
+    .then((organisation: ApiOrganisation) =>
+      organisation.links.find((l) => l.rel === "platform")?.href
+    )
+    .catch((e) => {
+      log.error(
+        `Error while fetching organisation url from '${initiative.url}', using api url to handle this (somewhat) gracefully`,
+        e,
+      );
+      return initiative.url;
     });
 };
 
