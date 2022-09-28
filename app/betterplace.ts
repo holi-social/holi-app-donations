@@ -144,6 +144,8 @@ const transformProjectCategory = (
 export const fetchCategories = (
   projectId: number,
 ): Promise<string[]> => {
+  // even though the original query might use a different locale, we are using "en" as locale deliberately
+  // betterplace translates category slugs but we need stable identifiers, therefore we default to "en"
   const href =
     `https://api.betterplace.org/en/api_v4/projects/${projectId}/categories.json`;
   log.debug(`  fetching project categories from ${href}`);
