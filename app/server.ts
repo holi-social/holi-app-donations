@@ -17,8 +17,10 @@ import { Server } from "https://deno.land/std@0.155.0/http/server.ts";
 
 const typeDefs = gql`
     type Picture {
-        url: String!
         type: String!
+        url: String!
+        width: Int
+        height: Int
     }
 
     type Initiative {

@@ -223,7 +223,9 @@ const expectedInitiative1: Initiative = {
   name: "Carrier 1",
   picture: [
     {
-      type: "tiny_square",
+      type: "fill",
+      width: 100,
+      height: 100,
       url:
         "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/000/045/fill_100x100_original_ARCHE_Logo_rgb_pos.jpg",
     },
@@ -231,6 +233,8 @@ const expectedInitiative1: Initiative = {
       type: "original",
       url:
         "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/000/045/crop_original_original_ARCHE_Logo_rgb_pos.jpg",
+      width: null,
+      height: null,
     },
   ],
   url:
@@ -244,7 +248,9 @@ const expectedInitiative2: Initiative = {
   name: "Carrier 2",
   picture: [
     {
-      type: "tiny_square",
+      type: "fill",
+      width: 100,
+      height: 100,
       url:
         "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/025/417/fill_100x100_sea_watch_logo.png",
     },
@@ -252,6 +258,8 @@ const expectedInitiative2: Initiative = {
       type: "original",
       url:
         "https://betterplace-assets.betterplace.org/uploads/organisation/profile_picture/000/025/417/crop_original_sea_watch_logo.png",
+      width: null,
+      height: null,
     },
   ],
   url: "https://www.betterplace.org/de/organisations/25435-sea-eye-e-v",
@@ -274,12 +282,22 @@ export const expectedResultList: ProjectsResponse = {
       openAmountInCents: 421234,
       picture: [
         {
-          "type": "small",
-          "url": "https://www.example.com/image1_resized1.jpg",
+          type: "fill",
+          url: "https://www.example.com/image1_resized2.jpg",
+          width: 100,
+          height: 100,
         },
         {
-          "type": "original",
-          "url": "https://www.example.com/image1.jpg",
+          type: "fill",
+          width: 410,
+          height: 214,
+          url: "https://www.example.com/image1_resized1.jpg",
+        },
+        {
+          type: "original",
+          url: "https://www.example.com/image1.jpg",
+          width: null,
+          height: null,
         },
       ],
       initiative: expectedInitiative1,
@@ -342,12 +360,22 @@ export const expectedResult: Project = {
   openAmountInCents: 421234,
   picture: [
     {
-      "type": "small",
-      "url": "https://www.example.com/image1_resized1.jpg",
+      type: "fill",
+      url: "https://www.example.com/image1_resized2.jpg",
+      width: 100,
+      height: 100,
     },
     {
-      "type": "original",
-      "url": "https://www.example.com/image1.jpg",
+      type: "fill",
+      width: 410,
+      height: 214,
+      url: "https://www.example.com/image1_resized1.jpg",
+    },
+    {
+      type: "original",
+      url: "https://www.example.com/image1.jpg",
+      width: null,
+      height: null,
     },
   ],
   initiative: expectedInitiative1,

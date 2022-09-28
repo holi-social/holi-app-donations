@@ -1,12 +1,9 @@
 import { log, Parser } from "./deps.ts";
 import {
   Initiative,
-  InitiativePicture,
-  InitiativePictureType,
+  Picture,
   Project,
   ProjectParameters,
-  ProjectPicture,
-  ProjectPictureType,
   ProjectsParameters,
   ProjectsResponse,
 } from "./types.ts";
@@ -21,20 +18,7 @@ import {
 } from "./api_types.ts";
 
 const BASE_URL = "https://api.betterplace.org";
-
-const PROJECT_PICTURE_TYPE_MAPPING: {
-  [key: string]: ProjectPictureType;
-} = {
-  original: "original",
-  fill_410x214: "small",
-};
-
-const INITIATIVE_PICTURE_TYPE_MAPPING: {
-  [key: string]: InitiativePictureType;
-} = {
-  original: "original",
-  fill_100x100: "tiny_square",
-};
+const PICTURE_TYPE_REGEX = /(.*)_(\d+)x(\d+)/;
 
 const cleanUpHtml = (html: string): string => {
   let result = "";
@@ -52,44 +36,34 @@ const cleanUpHtml = (html: string): string => {
   return result;
 };
 
-const transformProjectPicture = (
+const transformPicture = (
   picture: ApiPicture | undefined,
-): ProjectPicture[] => {
+): Picture[] => {
   if (!picture) {
     return [];
   }
-  const relTypeRelevant = (link: ApiLink): boolean => {
-    return !!link.href &&
-      Object.keys(PROJECT_PICTURE_TYPE_MAPPING).includes(link.rel);
-  };
-  return picture.links
-    .filter(relTypeRelevant)
-    .map((link: ApiLink) => {
+  return picture.links.map((link: ApiLink) => {
+    try {
+      const matches = PICTURE_TYPE_REGEX.exec(link.rel);
+      if (matches?.length !== 4) {
+        return {
+          type: link.rel,
+          url: link.href,
+        };
+      }
       return {
+        type: matches[1],
         url: link.href,
-        type: PROJECT_PICTURE_TYPE_MAPPING[link.rel],
+        width: parseInt(matches[2], 10),
+        height: parseInt(matches[3], 10),
       };
-    });
-};
-
-const transformInitiativePicture = (
-  picture: ApiPicture | undefined,
-): InitiativePicture[] => {
-  if (!picture) {
-    return [];
-  }
-  const relTypeRelevant = (link: ApiLink): boolean => {
-    return !!link.href &&
-      Object.keys(INITIATIVE_PICTURE_TYPE_MAPPING).includes(link.rel);
-  };
-  return picture.links
-    .filter(relTypeRelevant)
-    .map((link: ApiLink) => {
+    } catch {
       return {
+        type: link.rel,
         url: link.href,
-        type: INITIATIVE_PICTURE_TYPE_MAPPING[link.rel],
       };
-    });
+    }
+  });
 };
 
 const transformCarrier = (
@@ -101,7 +75,7 @@ const transformCarrier = (
     city: carrier.city,
     country: carrier.country,
     url: carrier.links.find((l) => l.rel === "self")?.href, // will be replaced by separate resolver resp. used as fallback
-    picture: transformInitiativePicture(carrier.picture),
+    picture: transformPicture(carrier.picture),
   };
 };
 
@@ -118,7 +92,7 @@ const transformProject = (
     donationsCount: project.donations_count,
     progressPercentage: project.progress_percentage,
     openAmountInCents: project.open_amount_in_cents,
-    picture: transformProjectPicture(project.profile_picture),
+    picture: transformPicture(project.profile_picture),
     summary: project.summary,
     description: project.description && cleanUpHtml(project.description),
   };
