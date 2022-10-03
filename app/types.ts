@@ -50,12 +50,3 @@ export interface Project {
   summary: string | undefined | null;
   description: string | undefined | null;
 }
-
-export interface Pagination {
-  totalResults: number;
-  offset: number;
-}
-
-export interface ProjectsResponse extends Pagination {
-  projects: Project[];
-}
