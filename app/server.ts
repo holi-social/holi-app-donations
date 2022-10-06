@@ -11,9 +11,7 @@ import {
   fetchProject,
   fetchProjects,
 } from "./betterplace.ts";
-import { makeExecutableSchema } from "https://deno.land/x/graphql_tools@0.0.2/schema/makeExecutableSchema.ts";
-import { GraphQLHTTP } from "https://deno.land/x/gql@1.1.2/http.ts";
-import { Server } from "https://deno.land/std@0.155.0/http/server.ts";
+import { GraphQLHTTP, makeExecutableSchema, Server } from "./deps.ts";
 
 const typeDefs = gql`
     type Picture {
