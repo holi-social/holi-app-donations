@@ -6,7 +6,6 @@ import {
   assertSpyCall,
   describe,
   it,
-  resolveResponse,
   returnsNext,
   Stub,
   stub,
@@ -120,7 +119,7 @@ const processGqlRequest = (
     }),
   });
   return middleware(request)
-    .then(resolveResponse)
+    .then((response) => response.json())
     .then((response) => response.data);
 };
 
