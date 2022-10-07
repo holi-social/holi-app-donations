@@ -6,7 +6,6 @@ import {
   assertSpyCall,
   describe,
   it,
-  resolveResponse,
   returnsNext,
   Stub,
   stub,
@@ -25,7 +24,7 @@ import {
   expectedResult,
   expectedResultList,
 } from "./betterplace_test_data.ts";
-import { Project, ProjectsResponse } from "./types.ts";
+import { Project } from "./types.ts";
 
 const emptyResponse = {
   total_entries: 0,
@@ -124,23 +123,20 @@ const processGqlRequest = (
     }),
   });
   return middleware(request)
-    .then(resolveResponse)
+    .then((response) => response.json())
     .then((response) => response.data);
 };
 
-const queryProjects = async (): Promise<ProjectsResponse> => {
-  const promise = processGqlRequest(`
+const queryProjects = (): Promise<Project[]> => {
+  const query = `
   query Projects {
     projects {
-      totalResults
-      offset
-      projects {
-        ${projectFragment}
-      }
+      ${projectFragment}
     }
-  }`);
-
-  return (await promise)?.projects as ProjectsResponse;
+  }`;
+  return processGqlRequest(query).then((result) =>
+    result?.projects as Array<Project>
+  );
 };
 
 const queryProject = async (): Promise<Project> => {
@@ -172,7 +168,7 @@ describe("betterplace", () => {
     await fetchProjects({ locale: "de", limit: 10, offset: 20 });
 
     const expectedUrl = "https://api.betterplace.org/de/api_v4/projects.json?" +
-      "facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&page=2&per_page=10";
+      "facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&page=3&per_page=10";
     assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
   });
 
@@ -182,7 +178,7 @@ describe("betterplace", () => {
     await fetchProjects({});
 
     const expectedUrl = "https://api.betterplace.org/en/api_v4/projects.json?" +
-      "facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&page=0&per_page=5";
+      "facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&page=1&per_page=5";
     assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
   });
 
@@ -191,12 +187,7 @@ describe("betterplace", () => {
 
     const result = await fetchProjects({});
 
-    const expectedResult = {
-      totalResults: 0,
-      offset: 0,
-      projects: [],
-    };
-    assertEquals(result, expectedResult);
+    assertEquals(result, []);
   });
 
   it("correctly parses project list", async () => {
@@ -245,7 +236,7 @@ describe("betterplace", () => {
 
     const result = await queryProjects();
 
-    const project1 = result.projects.find((p) => p.id === 1);
+    const project1 = result.find((p) => p.id === 1);
     assertExists(project1);
     assertEquals(project1.categories, []);
   });
@@ -260,7 +251,7 @@ describe("betterplace", () => {
 
     const result = await queryProjects();
 
-    const project1 = result.projects.find((p) => p.id === 1);
+    const project1 = result.find((p) => p.id === 1);
     assertExists(project1?.initiative);
     assertEquals(
       project1.initiative.url,

@@ -5,7 +5,6 @@ import {
   Project,
   ProjectParameters,
   ProjectsParameters,
-  ProjectsResponse,
 } from "./types.ts";
 import {
   ApiCarrier,
@@ -100,14 +99,7 @@ const transformProject = (
 
 const transformProjectResponse = (
   response: ApiProjectsResponse,
-): ProjectsResponse => {
-  const apiProjects = response.data;
-  return {
-    totalResults: response.total_entries,
-    offset: response.offset,
-    projects: apiProjects.map(transformProject),
-  };
-};
+): Project[] => response.data.map(transformProject);
 
 // TODO consider returning an object consisting of at least id + slug so that original category URL can be reconstructed
 //  which could be needed in later stories in which we fetch projects of a given category
@@ -167,14 +159,14 @@ function _debugP<In>(desc: string | undefined = undefined) {
 
 export const fetchProjects = (
   { locale = "en", limit = 5, offset = 0 }: ProjectsParameters,
-): Promise<ProjectsResponse> => {
-  const page = Math.floor(offset / limit);
+): Promise<Project[]> => {
+  const page = Math.floor(offset / limit) + 1; // page is NOT zero-based (!), i.e. first page = 1
   const params =
     "facets=completed:false|closed:false|prohibit_donations:false&" +
     `order=rank:DESC&page=${page}&per_page=${limit}`;
   const url = `${BASE_URL}/${locale}/api_v4/projects.json?${params}`;
   const start = Date.now();
-  log.debug(`fetching projects from ${url}`);
+  log.debug(`fetching projects for page ${page} from ${url}`);
   return fetch(url)
     .then((result) => result.json())
     .then(transformProjectResponse)

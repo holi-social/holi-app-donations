@@ -21,6 +21,12 @@
   "https://deno.land/std@0.155.0/log/levels.ts": "82c965b90f763b5313e7595d4ba78d5095a13646d18430ebaf547526131604d1",
   "https://deno.land/std@0.155.0/log/logger.ts": "b545159727b023825ee6814d9178fb2a7472f8d95d704c253b771b95c658cf8c",
   "https://deno.land/std@0.155.0/log/mod.ts": "62d56c28e8fbaa0f6c8b6df41cb31e47c51ae8a93e78559612ecb5a4f76d7424",
+  "https://deno.land/std@0.155.0/testing/_diff.ts": "a23e7fc2b4d8daa3e158fa06856bedf5334ce2a2831e8bf9e509717f455adb2c",
+  "https://deno.land/std@0.155.0/testing/_format.ts": "cd11136e1797791045e639e9f0f4640d5b4166148796cad37e6ef75f7d7f3832",
+  "https://deno.land/std@0.155.0/testing/_test_suite.ts": "2d07073d5460a4e3ec50c55ae822cd9bd136926d7363091379947fef9c73c3e4",
+  "https://deno.land/std@0.155.0/testing/asserts.ts": "ac295f7fd22a7af107580e2475402a8c386cb1bf18bf837ae266ac0665786026",
+  "https://deno.land/std@0.155.0/testing/bdd.ts": "35060cefd9cc21b414f4d89453b3551a3d52ec50aeff25db432503c5485b2f72",
+  "https://deno.land/std@0.155.0/testing/mock.ts": "d7ad40139cda87476c4dc1efeffe406bbfb4a5f82b688e0b85bffe9e911526a2",
   "https://deno.land/x/gql@1.1.2/common.ts": "118d5008c59d5ab77bd319803c7ebbe7ed8517de308594d60282b90c5d8c22c7",
   "https://deno.land/x/gql@1.1.2/graphiql/markup.ts": "ea572ab19ef963f8716d1b827204fec87a40b55eefde11f9b5342fc5382ba597",
   "https://deno.land/x/gql@1.1.2/graphiql/render.ts": "6d158e74c93192ce6b0230ecf18b0cb6ad37270b8f1cec8c2638109198c4ba1b",
@@ -305,7 +311,7 @@
   "https://deno.land/x/html_parser@v0.1.3/src/utils/querying.ts": "b8efd0fbbcc38c386633ce6233d91508f3f35115ac3930eb71063e2576429eb3",
   "https://deno.land/x/html_parser@v0.1.3/src/utils/stringify.ts": "df98808214552b40b12fe00d833431ef5ae22a4842c3af1373c33d611ffc4e24",
   "https://deno.land/x/html_parser@v0.1.3/src/utils/traversal.ts": "84988442d00f83728d87d6e462113ad5107f002e32e08d88a99c7284e0252d60",
-  "https://esm.sh/v95/cssfilter@0.0.10/deno/cssfilter.js": "3f4e74e02d5c9e1c23bd024be531b70f656aa5af2ccfcadf6da07d2231886333",
-  "https://esm.sh/v95/xss@1.0.14/deno/xss.js": "75d6102c31d0bdbd23d58e80b060984eb1bb43045896fd2188c84974d2134d0a",
-  "https://esm.sh/xss@1.0.14?no-check": "72b94d6949678b4b0e6658175c6f1656966170671a3c72def7f3563c4e088970"
+  "https://esm.sh/v96/cssfilter@0.0.10/deno/cssfilter.js": "3f4e74e02d5c9e1c23bd024be531b70f656aa5af2ccfcadf6da07d2231886333",
+  "https://esm.sh/v96/xss@1.0.14/deno/xss.js": "afe0a6cd162283b6b1b6e4913bcd2fbac8a1361aa1e4967492869ff9721d8105",
+  "https://esm.sh/xss@1.0.14?no-check": "ec838ffdfb256b98b1ebfdb6a177825382daa84c678af3e057374dde69bfc062"
 }
