@@ -49,4 +49,5 @@ export interface Project {
   picture: ProjectPicture[];
   summary: string | undefined | null;
   description: string | undefined | null;
+  donationUrl: string;
 }

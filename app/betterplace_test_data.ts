@@ -109,6 +109,9 @@ export const apiProject1: ApiProject = {
   links: [{
     "rel": "categories",
     "href": "https://api.betterplace.org/en/api_v4/projects/1/categories.json",
+  }, {
+    "rel": "new_donation",
+    "href": "https://www.betterplace.org/de/donate/platform/projects/1",
   }],
   carrier: apiProjectCarrier1,
 };
@@ -129,6 +132,9 @@ const apiProject2: ApiProject = {
   links: [{
     "rel": "categories",
     "href": "https://api.betterplace.org/en/api_v4/projects/2/categories.json",
+  }, {
+    "rel": "new_donation",
+    "href": "https://www.betterplace.org/de/donate/platform/projects/2",
   }],
   carrier: apiProjectCarrier1,
 };
@@ -150,6 +156,9 @@ const apiProject3: ApiProject = {
   links: [{
     "rel": "categories",
     "href": "https://api.betterplace.org/en/api_v4/projects/3/categories.json",
+  }, {
+    "rel": "new_donation",
+    "href": "https://www.betterplace.org/de/donate/platform/projects/3",
   }],
   carrier: apiProjectCarrier2,
 };
@@ -170,6 +179,9 @@ const apiProject4: ApiProject = {
   links: [{
     "rel": "categories",
     "href": "https://api.betterplace.org/en/api_v4/projects/4/categories.json",
+  }, {
+    "rel": "new_donation",
+    "href": "https://www.betterplace.org/de/donate/platform/projects/4",
   }],
   carrier: apiProjectCarrier2,
 };
@@ -280,6 +292,7 @@ export const expectedResultList: Project[] = [
       },
     ],
     initiative: expectedInitiative1,
+    donationUrl: "https://www.betterplace.org/de/donate/platform/projects/1",
   },
   {
     id: 2,
@@ -294,6 +307,7 @@ export const expectedResultList: Project[] = [
     openAmountInCents: 1234567,
     picture: [],
     initiative: expectedInitiative1,
+    donationUrl: "https://www.betterplace.org/de/donate/platform/projects/2",
   },
   {
     id: 3,
@@ -308,6 +322,7 @@ export const expectedResultList: Project[] = [
     openAmountInCents: 4200000,
     picture: [],
     initiative: expectedInitiative2,
+    donationUrl: "https://www.betterplace.org/de/donate/platform/projects/3",
   },
   {
     id: 4,
@@ -322,6 +337,7 @@ export const expectedResultList: Project[] = [
     openAmountInCents: 1200000,
     picture: [],
     initiative: expectedInitiative2,
+    donationUrl: "https://www.betterplace.org/de/donate/platform/projects/4",
   },
 ];
 
@@ -347,4 +363,5 @@ export const expectedResult: Project = {
     },
   ],
   initiative: expectedInitiative1,
+  donationUrl: "https://www.betterplace.org/de/donate/platform/projects/1",
 };
