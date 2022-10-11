@@ -88,8 +88,10 @@ const projectFragment = `
   progressPercentage
   openAmountInCents
   picture {
-      type
-      url
+    type
+    url
+    width
+    height
   }
   initiative {
     id
@@ -97,8 +99,10 @@ const projectFragment = `
     city
     country
     picture {
-      url
       type
+      url
+      width
+      height
     }
     url
   }`;
