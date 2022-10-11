@@ -84,6 +84,7 @@ const projectFragment = `
   country
   categories
   donationsCount
+  donationUrl
   progressPercentage
   openAmountInCents
   picture {

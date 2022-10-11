@@ -94,6 +94,7 @@ const transformProject = (
     picture: transformPicture(project.profile_picture),
     summary: project.summary,
     description: project.description && cleanUpHtml(project.description),
+    donationUrl: project.links.find((p) => p.rel === "new_donation")!.href,
   };
 };
 

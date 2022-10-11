@@ -43,6 +43,7 @@ const typeDefs = gql`
         initiative: Initiative!
         summary: String
         description: String
+        donationUrl: String
     }
 
     type Query {
