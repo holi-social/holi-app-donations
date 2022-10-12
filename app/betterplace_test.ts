@@ -21,10 +21,10 @@ import {
   categoriesResult,
   categoryEducation,
   categoryPopular,
+  expectedProjectsResponse,
   expectedResult,
-  expectedResultList,
 } from "./betterplace_test_data.ts";
-import { Project } from "./types.ts";
+import { Project, ProjectsResponse } from "./types.ts";
 
 const emptyResponse = {
   total_entries: 0,
@@ -124,15 +124,18 @@ const processGqlRequest = (
     .then((response) => response.data);
 };
 
-const queryProjects = (): Promise<Project[]> => {
+const queryProjects = (): Promise<ProjectsResponse> => {
   const query = `
   query Projects {
     projects {
-      ${projectFragment}
+      totalResults
+      projects {
+        ${projectFragment}
+      }
     }
   }`;
   return processGqlRequest(query).then((result) =>
-    result?.projects as Array<Project>
+    result?.projects as ProjectsResponse
   );
 };
 
@@ -210,7 +213,7 @@ describe("betterplace", () => {
 
     const result = await fetchProjects({});
 
-    assertEquals(result, []);
+    assertEquals(result, { totalResults: 0, projects: [] });
   });
 
   it("correctly parses project list", async () => {
@@ -218,7 +221,7 @@ describe("betterplace", () => {
 
     const result = await queryProjects();
 
-    assertEquals(result, expectedResultList);
+    assertEquals(result, expectedProjectsResponse);
   });
 
   it("correctly retrieves a project by ID", async () => {
@@ -259,7 +262,7 @@ describe("betterplace", () => {
 
     const result = await queryProjects();
 
-    const project1 = result.find((p) => p.id === 1);
+    const project1 = result.projects.find((p) => p.id === 1);
     assertExists(project1);
     assertEquals(project1.categories, []);
   });
@@ -274,7 +277,7 @@ describe("betterplace", () => {
 
     const result = await queryProjects();
 
-    const project1 = result.find((p) => p.id === 1);
+    const project1 = result.projects.find((p) => p.id === 1);
     assertExists(project1?.initiative);
     assertEquals(
       project1.initiative.url,

@@ -52,3 +52,8 @@ export interface Project {
   description: string | undefined | null;
   donationUrl: string;
 }
+
+export interface ProjectsResponse {
+  totalResults: number;
+  projects: Project[];
+}

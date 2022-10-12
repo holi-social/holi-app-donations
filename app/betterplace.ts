@@ -8,6 +8,7 @@ import {
   ProjectPicture,
   ProjectPictureType,
   ProjectsParameters,
+  ProjectsResponse,
 } from "./types.ts";
 import {
   ApiCarrier,
@@ -124,9 +125,14 @@ const transformProject = (
   };
 };
 
-const transformProjectResponse = (
+const transformProjectsResponse = (
   response: ApiProjectsResponse,
-): Project[] => response.data.map(transformProject);
+): ProjectsResponse => {
+  return {
+    totalResults: response.total_entries,
+    projects: response.data.map(transformProject),
+  };
+};
 
 // TODO consider returning an object consisting of at least id + slug so that original category URL can be reconstructed
 //  which could be needed in later stories in which we fetch projects of a given category
@@ -186,7 +192,7 @@ function _debugP<In>(desc: string | undefined = undefined) {
 
 export const fetchProjects = (
   { locale = "en", limit = 5, offset = 0, location }: ProjectsParameters,
-): Promise<Project[]> => {
+): Promise<ProjectsResponse> => {
   const page = Math.floor(offset / limit) + 1; // page is NOT zero-based (!), i.e. first page = 1
   const params =
     "facets=completed:false|closed:false|prohibit_donations:false&" +
@@ -198,7 +204,7 @@ export const fetchProjects = (
   log.debug(`fetching projects for page ${page} from ${url}`);
   return fetch(url)
     .then((result) => result.json())
-    .then(transformProjectResponse)
+    .then(transformProjectsResponse)
     .then((result) => {
       const duration = Date.now() - start;
       log.debug(`  fetching projects took ${duration} ms`);
