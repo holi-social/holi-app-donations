@@ -169,6 +169,32 @@ describe("betterplace", () => {
     assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
   });
 
+  it("calls api with correct parameters for location search", async () => {
+    fetchStub = stubFetch(emptyResponse);
+
+    await fetchProjects({
+      locale: "de",
+      limit: 10,
+      offset: 20,
+      location: "Hamburg",
+    });
+
+    const expectedUrl = "https://api.betterplace.org/de/api_v4/projects.json?" +
+      "facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&page=3&per_page=10" +
+      "&scope=location&q=Hamburg";
+    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+  });
+
+  it("calls api with correct parameters for empty location search", async () => {
+    fetchStub = stubFetch(emptyResponse);
+
+    await fetchProjects({ locale: "de", limit: 10, offset: 20, location: "" });
+
+    const expectedUrl = "https://api.betterplace.org/de/api_v4/projects.json?" +
+      "facets=completed:false|closed:false|prohibit_donations:false&order=rank:DESC&page=3&per_page=10";
+    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+  });
+
   it("uses default parameters for api call if missing", async () => {
     fetchStub = stubFetch(emptyResponse);
 

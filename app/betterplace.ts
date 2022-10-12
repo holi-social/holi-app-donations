@@ -185,13 +185,15 @@ function _debugP<In>(desc: string | undefined = undefined) {
 }
 
 export const fetchProjects = (
-  { locale = "en", limit = 5, offset = 0 }: ProjectsParameters,
+  { locale = "en", limit = 5, offset = 0, location }: ProjectsParameters,
 ): Promise<Project[]> => {
   const page = Math.floor(offset / limit) + 1; // page is NOT zero-based (!), i.e. first page = 1
   const params =
     "facets=completed:false|closed:false|prohibit_donations:false&" +
     `order=rank:DESC&page=${page}&per_page=${limit}`;
-  const url = `${BASE_URL}/${locale}/api_v4/projects.json?${params}`;
+  const locationParams = location ? `&scope=location&q=${location}` : "";
+  const url =
+    `${BASE_URL}/${locale}/api_v4/projects.json?${params}${locationParams}`;
   const start = Date.now();
   log.debug(`fetching projects for page ${page} from ${url}`);
   return fetch(url)
