@@ -4,6 +4,7 @@ export interface ProjectsParameters {
   locale?: Locale;
   limit?: number;
   offset?: number;
+  location?: string;
 }
 
 export interface ProjectParameters {
@@ -43,4 +44,9 @@ export interface Project {
   summary: string | undefined | null;
   description: string | undefined | null;
   donationUrl: string;
+}
+
+export interface ProjectsResponse {
+  totalResults: number;
+  projects: Project[];
 }

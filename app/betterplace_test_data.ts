@@ -5,7 +5,7 @@ import {
   ApiProjectCategory,
   ApiProjectsResponse,
 } from "./api_types.ts";
-import { Initiative, Project } from "./types.ts";
+import { Initiative, Project, ProjectsResponse } from "./types.ts";
 
 const apiProjectCarrier1: ApiCarrier = {
   id: 1,
@@ -277,7 +277,7 @@ const expectedInitiative2: Initiative = {
   url: "https://www.betterplace.org/de/organisations/25435-sea-eye-e-v",
 };
 
-export const expectedResultList: Project[] = [
+const expectedProjects: Project[] = [
   {
     id: 1,
     title: "Project 1",
@@ -358,6 +358,11 @@ export const expectedResultList: Project[] = [
     donationUrl: "https://www.betterplace.org/de/donate/platform/projects/4",
   },
 ];
+
+export const expectedProjectsResponse: ProjectsResponse = {
+  totalResults: 123,
+  projects: expectedProjects,
+};
 
 export const expectedResult: Project = {
   id: 1,

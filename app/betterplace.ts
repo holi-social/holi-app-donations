@@ -5,6 +5,7 @@ import {
   Project,
   ProjectParameters,
   ProjectsParameters,
+  ProjectsResponse,
 } from "./types.ts";
 import {
   ApiCarrier,
@@ -98,9 +99,14 @@ const transformProject = (
   };
 };
 
-const transformProjectResponse = (
+const transformProjectsResponse = (
   response: ApiProjectsResponse,
-): Project[] => response.data.map(transformProject);
+): ProjectsResponse => {
+  return {
+    totalResults: response.total_entries,
+    projects: response.data.map(transformProject),
+  };
+};
 
 // TODO consider returning an object consisting of at least id + slug so that original category URL can be reconstructed
 //  which could be needed in later stories in which we fetch projects of a given category
@@ -158,19 +164,34 @@ function _debugP<In>(desc: string | undefined = undefined) {
   };
 }
 
-export const fetchProjects = (
-  { locale = "en", limit = 5, offset = 0 }: ProjectsParameters,
-): Promise<Project[]> => {
+const buildProjectsUrl = (
+  { locale = "en", limit = 5, offset = 0, location }: ProjectsParameters,
+): URL => {
   const page = Math.floor(offset / limit) + 1; // page is NOT zero-based (!), i.e. first page = 1
-  const params =
-    "facets=completed:false|closed:false|prohibit_donations:false&" +
-    `order=rank:DESC&page=${page}&per_page=${limit}`;
-  const url = `${BASE_URL}/${locale}/api_v4/projects.json?${params}`;
+  const url = new URL(`${BASE_URL}/${locale}/api_v4/projects.json`);
+  url.searchParams.append(
+    "facets",
+    "completed:false|closed:false|prohibit_donations:false",
+  );
+  url.searchParams.append("order", "rank:DESC");
+  url.searchParams.append("page", page.toString());
+  url.searchParams.append("per_page", limit.toString());
+  if (location) {
+    url.searchParams.append("scope", "location");
+    url.searchParams.append("q", location);
+  }
+  return url;
+};
+
+export const fetchProjects = (
+  params: ProjectsParameters,
+): Promise<ProjectsResponse> => {
+  const url = buildProjectsUrl(params);
   const start = Date.now();
-  log.debug(`fetching projects for page ${page} from ${url}`);
+  log.debug(`fetching projects from ${url}`);
   return fetch(url)
     .then((result) => result.json())
-    .then(transformProjectResponse)
+    .then(transformProjectsResponse)
     .then((result) => {
       const duration = Date.now() - start;
       log.debug(`  fetching projects took ${duration} ms`);

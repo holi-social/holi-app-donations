@@ -46,9 +46,14 @@ const typeDefs = gql`
         donationUrl: String
     }
 
+    type ProjectsResponse {
+      totalResults: Int!
+      projects: [Project]!
+    }
+
     type Query {
         # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
-        projects(offset: Int, limit: Int, locale: String): [Project]!
+        projects(offset: Int, limit: Int, locale: String, location: String): ProjectsResponse!
         project(id: Int!): Project!
     }
 `;
