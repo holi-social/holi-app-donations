@@ -205,7 +205,6 @@ const buildProjectsUrl = (
   if (location) {
     url.searchParams.append("scope", "location");
     url.searchParams.append("q", location);
-    console.log(url.toString());
   }
   return url;
 };
