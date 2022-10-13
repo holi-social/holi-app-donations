@@ -11,18 +11,11 @@ export interface ProjectParameters {
   id: number;
 }
 
-export type ProjectPictureType = "original" | "small";
-
-export type InitiativePictureType = "original" | "tiny_square";
-
-export interface ProjectPicture {
+export interface Picture {
   url: string;
-  type: ProjectPictureType;
-}
-
-export interface InitiativePicture {
-  url: string;
-  type: InitiativePictureType;
+  type: string;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface Initiative {
@@ -30,7 +23,7 @@ export interface Initiative {
   name: string;
   city: string | undefined | null;
   country: string | undefined | null;
-  picture: InitiativePicture[];
+  picture: Picture[];
   url?: string;
 }
 
@@ -46,7 +39,7 @@ export interface Project {
   progressPercentage: number;
   openAmountInCents: number;
   /** The project's "profile picture" in different variants */
-  picture: ProjectPicture[];
+  picture: Picture[];
   summary: string | undefined | null;
   description: string | undefined | null;
   donationUrl: string;

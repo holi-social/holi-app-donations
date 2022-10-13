@@ -15,8 +15,10 @@ import { GraphQLHTTP, makeExecutableSchema, Server } from "./deps.ts";
 
 const typeDefs = gql`
     type Picture {
-        url: String!
         type: String!
+        url: String!
+        width: Int
+        height: Int
     }
 
     type Initiative {
