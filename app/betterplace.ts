@@ -190,18 +190,32 @@ function _debugP<In>(desc: string | undefined = undefined) {
   };
 }
 
-export const fetchProjects = (
+const buildProjectsUrl = (
   { locale = "en", limit = 5, offset = 0, location }: ProjectsParameters,
-): Promise<ProjectsResponse> => {
+): URL => {
   const page = Math.floor(offset / limit) + 1; // page is NOT zero-based (!), i.e. first page = 1
-  const params =
-    "facets=completed:false|closed:false|prohibit_donations:false&" +
-    `order=rank:DESC&page=${page}&per_page=${limit}`;
-  const locationParams = location ? `&scope=location&q=${location}` : "";
-  const url =
-    `${BASE_URL}/${locale}/api_v4/projects.json?${params}${locationParams}`;
+  const url = new URL(`${BASE_URL}/${locale}/api_v4/projects.json`);
+  url.searchParams.append(
+    "facets",
+    "completed:false|closed:false|prohibit_donations:false",
+  );
+  url.searchParams.append("order", "rank:DESC");
+  url.searchParams.append("page", page.toString());
+  url.searchParams.append("per_page", limit.toString());
+  if (location) {
+    url.searchParams.append("scope", "location");
+    url.searchParams.append("q", location);
+    console.log(url.toString());
+  }
+  return url;
+};
+
+export const fetchProjects = (
+  params: ProjectsParameters,
+): Promise<ProjectsResponse> => {
+  const url = buildProjectsUrl(params);
   const start = Date.now();
-  log.debug(`fetching projects for page ${page} from ${url}`);
+  log.debug(`fetching projects from ${url}`);
   return fetch(url)
     .then((result) => result.json())
     .then(transformProjectsResponse)
