@@ -11,7 +11,7 @@ import {
   stub,
 } from "./dev_deps.ts";
 import { fetchProject, fetchProjects } from "./betterplace.ts";
-import { yoga } from "./server.ts";
+import { graphQLServer } from "./server.ts";
 import setupLogging from "./logging.ts";
 import {
   apiOrganisation1,
@@ -124,7 +124,7 @@ const processGqlRequest = (
       query: query,
     }),
   });
-  return yoga.handleRequest(request, {})
+  return graphQLServer.handleRequest(request)
     .then((response) => response.json())
     .then((response) => response.data);
 };
