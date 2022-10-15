@@ -1,4 +1,3 @@
-import { gql } from "./deps.ts";
 import {
   Initiative,
   Project,
@@ -11,9 +10,9 @@ import {
   fetchProject,
   fetchProjects,
 } from "./betterplace.ts";
-import { GraphQLHTTP, makeExecutableSchema, Server } from "./deps.ts";
+import { createSchema, createYoga, serve, useResponseCache } from "./deps.ts";
 
-const typeDefs = gql`
+const typeDefs = `
     type Picture {
         type: String!
         url: String!
@@ -79,21 +78,21 @@ const resolvers = {
   },
 };
 
-export const schema = makeExecutableSchema({ resolvers, typeDefs });
-export const middleware = GraphQLHTTP<Request>({
-  schema,
+export const yoga = createYoga({
+  schema: createSchema({ resolvers, typeDefs }),
   graphiql: true,
+  plugins: [useResponseCache({
+    session: () => null, // global cache, shared by all users
+    ttlPerSchemaCoordinate: {
+      "Query.projects": 10_000, // cache 10 seconds
+    },
+  })],
 });
 
-export const requestHandler = async (req: Request) => {
-  const { pathname } = new URL(req.url);
-  return pathname === "/graphql"
-    ? await middleware(req)
-    : new Response("Not Found", { status: 404 });
-};
-
-export const createServer = (port: number) =>
-  new Server({
-    handler: requestHandler,
-    port: port,
+export const startServer = (port: number): Promise<void> =>
+  serve(yoga, {
+    port,
+    onListen({ hostname, port }) {
+      console.log(`Listening on http://${hostname}:${port}/graphql`);
+    },
   });

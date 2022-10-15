@@ -1,6 +1,8 @@
-export { Server } from "https://deno.land/std@0.155.0/http/server.ts";
-export { makeExecutableSchema } from "https://deno.land/x/graphql_tools@0.0.2/mod.ts";
-export { GraphQLHTTP } from "https://deno.land/x/gql@1.1.2/mod.ts";
-export { gql } from "https://deno.land/x/graphql_tag@0.0.1/mod.ts";
+export { serve } from "https://deno.land/std@0.155.0/http/server.ts";
+export {
+  createSchema,
+  createYoga,
+} from "https://cdn.skypack.dev/graphql-yoga@three?dts";
+export { useResponseCache } from "https://cdn.skypack.dev/@graphql-yoga/plugin-response-cache@three?dts";
 export * as log from "https://deno.land/std@0.155.0/log/mod.ts";
 export { Parser } from "https://deno.land/x/html_parser@v0.1.3/src/mod.ts";

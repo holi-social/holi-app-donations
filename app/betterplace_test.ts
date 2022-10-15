@@ -11,7 +11,7 @@ import {
   stub,
 } from "./dev_deps.ts";
 import { fetchProject, fetchProjects } from "./betterplace.ts";
-import { middleware } from "./server.ts";
+import { yoga } from "./server.ts";
 import setupLogging from "./logging.ts";
 import {
   apiOrganisation1,
@@ -124,7 +124,7 @@ const processGqlRequest = (
       query: query,
     }),
   });
-  return middleware(request)
+  return yoga.handleRequest(request, {})
     .then((response) => response.json())
     .then((response) => response.data);
 };
@@ -314,5 +314,18 @@ describe("betterplace", () => {
       project1.initiative.url,
       "https://api.betterplace.org/de/api_v4/organisations/1.json",
     );
+  });
+
+  it("returns cached results on recurring requests", async () => {
+    fetchStub = stubFetchByUrlPrefix(validApiResponses);
+    const result = await queryProjects();
+    assertEquals(result, expectedProjectsResponse);
+
+    fetchStub?.restore();
+    fetchStub = stubFetchByUrlPrefix({
+      "https://api.betterplace.org/en/api_v4/projects.json": {}, // provokes an error
+    });
+    const result2 = await queryProjects();
+    assertEquals(result2, expectedProjectsResponse);
   });
 });
