@@ -11,7 +11,7 @@ import {
   stub,
 } from "./dev_deps.ts";
 import { fetchProject, fetchProjects } from "./betterplace.ts";
-import { graphQLServer } from "./server.ts";
+import { createGraphQLServer, GraphQLServer } from "./server.ts";
 import setupLogging from "./logging.ts";
 import {
   apiOrganisation1,
@@ -50,8 +50,11 @@ const stubFetchByUrlPrefix = (
     const url = input.toString();
     for (const [urlPrefix, response] of Object.entries(responses)) {
       if (url.startsWith(urlPrefix)) {
-        if (response instanceof Error) return Promise.reject(response);
-        else return Promise.resolve(new Response(JSON.stringify(response)));
+        if (response instanceof Error) {
+          return Promise.reject(response);
+        } else {
+          return Promise.resolve(new Response(JSON.stringify(response)));
+        }
       }
     }
     throw Promise.reject(new Error(`Unexpected request URL "${url}"`));
@@ -61,19 +64,32 @@ const stubFetchByUrlPrefix = (
 const validApiResponses = {
   "https://api.betterplace.org/en/api_v4/projects.json": apiProjectsResult,
   "https://api.betterplace.org/en/api_v4/projects/1.json": apiProject1,
-  "https://api.betterplace.org/en/api_v4/projects/1": categoriesResult([
-    categoryEducation,
-  ]),
-  "https://api.betterplace.org/en/api_v4/projects/2": categoriesResult([
-    categoryPopular,
-  ]),
-  "https://api.betterplace.org/en/api_v4/projects/": categoriesResult([
-    categoryEducation,
-    categoryPopular,
-  ]),
+  "https://api.betterplace.org/en/api_v4/projects/1/categories.json":
+    categoriesResult([
+      categoryEducation,
+    ]),
+  "https://api.betterplace.org/en/api_v4/projects/2/categories.json":
+    categoriesResult([
+      categoryPopular,
+    ]),
+  "https://api.betterplace.org/en/api_v4/projects/3/categories.json":
+    categoriesResult([
+      categoryEducation,
+      categoryPopular,
+    ]),
+  "https://api.betterplace.org/en/api_v4/projects/4/categories.json":
+    categoriesResult([
+      categoryEducation,
+      categoryPopular,
+    ]),
   "https://api.betterplace.org/de/api_v4/organisations/1.json":
     apiOrganisation1,
-  "https://api.betterplace.org/de/api_v4/organisations/": apiOrganisation2,
+  "https://api.betterplace.org/de/api_v4/organisations/2.json":
+    apiOrganisation2,
+  "https://api.betterplace.org/de/api_v4/organisations/3.json":
+    apiOrganisation2,
+  "https://api.betterplace.org/de/api_v4/organisations/4.json":
+    apiOrganisation2,
 };
 
 const projectFragment = `
@@ -109,6 +125,7 @@ const projectFragment = `
   }`;
 
 const processGqlRequest = (
+  graphQLServer: GraphQLServer,
   query: string,
   variables: Record<string, unknown> = {},
 ): Promise<Record<string, unknown> | undefined | null> => {
@@ -129,7 +146,9 @@ const processGqlRequest = (
     .then((response) => response.data);
 };
 
-const queryProjects = (): Promise<ProjectsResponse> => {
+const queryProjects = (
+  graphQLServer: GraphQLServer,
+): Promise<ProjectsResponse> => {
   const query = `
   query Projects {
     projects {
@@ -139,13 +158,14 @@ const queryProjects = (): Promise<ProjectsResponse> => {
       }
     }
   }`;
-  return processGqlRequest(query).then((result) =>
+  return processGqlRequest(graphQLServer, query).then((result) =>
     result?.projects as ProjectsResponse
   );
 };
 
-const queryProject = async (): Promise<Project> => {
+const queryProject = async (graphQLServer: GraphQLServer): Promise<Project> => {
   const promise = processGqlRequest(
+    graphQLServer,
     `
     query ProjectById($id:Int!) {
       project(id:$id) {
@@ -250,7 +270,8 @@ describe("betterplace", () => {
   it("correctly parses project list", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-    const result = await queryProjects();
+    const graphQLServer = createGraphQLServer({ withCache: false });
+    const result = await queryProjects(graphQLServer);
 
     assertEquals(result, expectedProjectsResponse);
   });
@@ -258,7 +279,8 @@ describe("betterplace", () => {
   it("correctly retrieves a project by ID", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-    const result = await queryProject();
+    const graphQLServer = createGraphQLServer({ withCache: false });
+    const result = await queryProject(graphQLServer);
 
     assertEquals(result, expectedResult);
   });
@@ -286,12 +308,14 @@ describe("betterplace", () => {
   it("returns empty categories for invalid category responses", async () => {
     fetchStub = stubFetchByUrlPrefix({
       ...validApiResponses,
-      "https://api.betterplace.org/en/api_v4/projects/1": new Error(
-        "Expected error",
-      ),
+      "https://api.betterplace.org/en/api_v4/projects/1/categories.json":
+        new Error(
+          "Expected error",
+        ),
     });
 
-    const result = await queryProjects();
+    const graphQLServer = createGraphQLServer({ withCache: false });
+    const result = await queryProjects(graphQLServer);
 
     const project1 = result.projects.find((p) => p.id === 1);
     assertExists(project1);
@@ -306,7 +330,8 @@ describe("betterplace", () => {
       ),
     });
 
-    const result = await queryProjects();
+    const graphQLServer = createGraphQLServer({ withCache: false });
+    const result = await queryProjects(graphQLServer);
 
     const project1 = result.projects.find((p) => p.id === 1);
     assertExists(project1?.initiative);
@@ -318,14 +343,17 @@ describe("betterplace", () => {
 
   it("returns cached results on recurring requests", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
-    const result = await queryProjects();
+    const graphQLServer = createGraphQLServer({ withCache: true });
+    const result = await queryProjects(graphQLServer);
     assertEquals(result, expectedProjectsResponse);
 
     fetchStub?.restore();
     fetchStub = stubFetchByUrlPrefix({
-      "https://api.betterplace.org/en/api_v4/projects.json": {}, // provokes an error
+      "https://api.betterplace.org/en/api_v4/projects.json": new Error(
+        "Expected error",
+      ),
     });
-    const result2 = await queryProjects();
+    const result2 = await queryProjects(graphQLServer);
     assertEquals(result2, expectedProjectsResponse);
   });
 });

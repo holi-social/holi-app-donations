@@ -10,7 +10,12 @@ import {
   fetchProject,
   fetchProjects,
 } from "./betterplace.ts";
-import { createServer, serve, useResponseCache } from "./deps.ts";
+import {
+  createServer,
+  serve,
+  useResponseCache,
+  YogaServerInstance,
+} from "./deps.ts";
 
 const typeDefs = `
     type Picture {
@@ -78,16 +83,30 @@ const resolvers = {
   },
 };
 
-export const graphQLServer = createServer({
-  schema: { resolvers, typeDefs },
-  graphiql: true,
-  plugins: [useResponseCache({
+export const createGraphQLServer = (options: { withCache: boolean }) => {
+  const plugins = !options.withCache ? [] : [useResponseCache({
     session: () => null, // global cache, shared by all users
     /*ttlPerSchemaCoordinate: {
       "Query.projects": 10_000,
     },*/
-  })],
+  })];
+  return createServer({
+    schema: { resolvers, typeDefs },
+    graphiql: true,
+    plugins,
+  });
+};
+
+export type GraphQLServer = YogaServerInstance<
+  Record<never, never>,
+  Record<never, never>,
+  Project
+>;
+
+export const graphQLServer: GraphQLServer = createGraphQLServer({
+  withCache: true,
 });
 
-export const startServer = (port: number): Promise<void> =>
-  serve(graphQLServer.handleRequest, { port: port });
+export const startServer = (port: number): Promise<void> => {
+  return serve(graphQLServer.handleRequest, { port: port });
+};
