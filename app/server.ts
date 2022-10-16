@@ -86,9 +86,10 @@ const resolvers = {
 export const createGraphQLServer = (options: { withCache: boolean }) => {
   const plugins = !options.withCache ? [] : [useResponseCache({
     session: () => null, // global cache, shared by all users
-    /*ttlPerSchemaCoordinate: {
+    ttlPerSchemaCoordinate: {
       "Query.projects": 10_000,
-    },*/
+      "Query.project": 10_000,
+    },
   })];
   return createServer({
     schema: { resolvers, typeDefs },
@@ -108,5 +109,14 @@ export const graphQLServer: GraphQLServer = createGraphQLServer({
 });
 
 export const startServer = (port: number): Promise<void> => {
-  return serve(graphQLServer.handleRequest, { port: port });
+  return serve(graphQLServer.handleRequest, {
+    port: port,
+    onListen({ port, hostname }) {
+      console.log(
+        `Server started at http://${
+          hostname === "0.0.0.0" ? "localhost" : hostname
+        }:${port}/graphql`,
+      );
+    },
+  });
 };
