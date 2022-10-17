@@ -10,10 +10,11 @@ resource "random_id" "main" {
 
 resource "google_project_service" "service" {
   for_each = toset([
-    "run.googleapis.com",
-    "servicemanagement.googleapis.com",
-    "servicecontrol.googleapis.com",
     "endpoints.googleapis.com",
+    "places-backend.googleapis.com",
+    "run.googleapis.com",
+    "servicecontrol.googleapis.com",
+    "servicemanagement.googleapis.com",
   ])
 
   service = each.key
@@ -128,4 +129,24 @@ resource "google_cloud_run_service_iam_policy" "donations_api" {
   service  = google_cloud_run_service.donations_api.name
 
   policy_data = data.google_iam_policy.donations_api.policy_data
+}
+
+# TODO maybe only separate keys for staging, production and review environments
+resource "google_apikeys_key" "primary" {
+  name         = "places-autocompletion-api-${local.environment_name}"
+  project      = google_cloud_run_service.donations_api.project
+
+  restrictions {
+    api_targets {
+      service = "places-backend.googleapis.com"
+      methods = ["GET*"]
+    }
+  }
+
+  depends_on = [google_project_service.service]
+}
+
+output "maps_api_key" {
+  value = google_apikeys_key.primary.key_string
+  sensitive = true
 }
