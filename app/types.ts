@@ -50,3 +50,23 @@ export interface ProjectsResponse {
   totalResults: number;
   projects: Project[];
 }
+
+export interface PlaceSubstringMatch {
+  length: number;
+  offset: number;
+}
+
+export interface PlaceStructuredFormatting {
+  mainText: string;
+  mainTextMatchedSubstrings: PlaceSubstringMatch[];
+  secondaryText: string;
+}
+
+export interface Place {
+  description: string;
+  structuredFormatting: PlaceStructuredFormatting;
+}
+
+export interface PlacesParameters {
+  input: string;
+}

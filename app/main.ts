@@ -6,7 +6,9 @@ const PORT = 8001;
 
 setupLogging(Deno.env.get("ENVIRONMENT") || "development");
 
-const server = createServer(PORT);
+const server = createServer(PORT, {
+  placesApiKey: Deno.env.get("PLACES_API_KEY"),
+});
 
 await server.listenAndServe();
 
