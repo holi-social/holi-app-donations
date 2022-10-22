@@ -1,6 +1,7 @@
 import { gql } from "./deps.ts";
 import {
   Initiative,
+  PlacesParameters,
   Project,
   ProjectParameters,
   ProjectsParameters,
@@ -11,6 +12,7 @@ import {
   fetchProject,
   fetchProjects,
 } from "./betterplace.ts";
+import { fetchPlaces } from "./places.ts";
 import { GraphQLHTTP, makeExecutableSchema, Server } from "./deps.ts";
 
 const typeDefs = gql`
@@ -47,18 +49,31 @@ const typeDefs = gql`
     }
 
     type ProjectsResponse {
-      totalResults: Int!
-      projects: [Project]!
+        totalResults: Int!
+        projects: [Project]!
+    }
+
+    type PlaceSubstringMatch {
+        length: Int!
+        offset: Int!
+    }
+
+    type Place {
+        description: String!
+        mainText: String!
+        mainTextMatchedSubstrings: [PlaceSubstringMatch]!
+        secondaryText: String!
     }
 
     type Query {
         # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
         projects(offset: Int, limit: Int, locale: String, location: String): ProjectsResponse!
         project(id: Int!): Project!
+        places(input: String!): [Place]!
     }
 `;
 
-const resolvers = {
+const createResolvers = (serverConfig: ServerConfig) => ({
   Query: {
     projects: (
       // deno-lint-ignore no-explicit-any
@@ -70,6 +85,11 @@ const resolvers = {
       _parent: any,
       parameters: ProjectParameters,
     ) => fetchProject(parameters),
+    places: (
+      // deno-lint-ignore no-explicit-any
+      _parent: any,
+      parameters: PlacesParameters,
+    ) => fetchPlaces(parameters, serverConfig.placesApiKey || ""),
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),
@@ -77,23 +97,34 @@ const resolvers = {
   Initiative: {
     url: (args: Initiative) => fetchInitiativeUrl(args),
   },
-};
-
-export const schema = makeExecutableSchema({ resolvers, typeDefs });
-export const middleware = GraphQLHTTP<Request>({
-  schema,
-  graphiql: true,
 });
 
-export const requestHandler = async (req: Request) => {
-  const { pathname } = new URL(req.url);
-  return pathname === "/graphql"
-    ? await middleware(req)
-    : new Response("Not Found", { status: 404 });
-};
+export interface ServerConfig {
+  placesApiKey?: string;
+}
 
-export const createServer = (port: number) =>
+export const createSchema = (serverConfig: ServerConfig) =>
+  makeExecutableSchema({
+    resolvers: createResolvers(serverConfig),
+    typeDefs,
+  });
+
+export const createMiddleware = (serverConfig: ServerConfig) =>
+  GraphQLHTTP<Request>({
+    schema: createSchema(serverConfig),
+    graphiql: true,
+  });
+
+export const createRequestHandler =
+  (serverConfig: ServerConfig) => async (req: Request) => {
+    const { pathname } = new URL(req.url);
+    return pathname === "/graphql"
+      ? await createMiddleware(serverConfig)(req)
+      : new Response("Not Found", { status: 404 });
+  };
+
+export const createServer = (port: number, serverConfig: ServerConfig) =>
   new Server({
-    handler: requestHandler,
+    handler: createRequestHandler(serverConfig),
     port: port,
   });

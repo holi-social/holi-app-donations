@@ -10,8 +10,12 @@ import {
   Stub,
   stub,
 } from "./dev_deps.ts";
+import {
+  processGqlRequest,
+  ResponsePayload,
+  stubFetch,
+} from "./common_test.ts";
 import { fetchProject, fetchProjects } from "./betterplace.ts";
-import { middleware } from "./server.ts";
 import setupLogging from "./logging.ts";
 import {
   apiOrganisation1,
@@ -33,15 +37,6 @@ const emptyResponse = {
 };
 
 type UrlPrefix = string;
-type ResponsePayload = Record<string, unknown> | Error;
-
-const stubFetch = (response: ResponsePayload) => {
-  return stub(
-    globalThis,
-    "fetch",
-    returnsNext([Promise.resolve(new Response(JSON.stringify(response)))]),
-  );
-};
 
 const stubFetchByUrlPrefix = (
   responses: Record<UrlPrefix, ResponsePayload>,
@@ -107,27 +102,6 @@ const projectFragment = `
     }
     url
   }`;
-
-const processGqlRequest = (
-  query: string,
-  variables: Record<string, unknown> = {},
-): Promise<Record<string, unknown> | undefined | null> => {
-  const request = new Request("http://localhost:8001/graphql", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "accept": "*/*",
-    },
-    body: JSON.stringify({
-      operationName: null,
-      variables: variables,
-      query: query,
-    }),
-  });
-  return middleware(request)
-    .then((response) => response.json())
-    .then((response) => response.data);
-};
 
 const queryProjects = (): Promise<ProjectsResponse> => {
   const query = `
