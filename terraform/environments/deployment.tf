@@ -138,8 +138,8 @@ resource "google_cloud_run_service_iam_policy" "donations_api" {
 
 resource "google_apikeys_key" "deployment" {
   # restrict API keys to "staging", "production" and "review" to not generate too many API keys (for every review env)
-  display_name = "places_api_key_${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
-  name         = "places_api_key_${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
+  display_name = "places-api-key-${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
+  name         = "places-api-key-${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
   project      = data.terraform_remote_state.holi_infra_state.outputs.shared_project_id
 
   restrictions {
@@ -153,8 +153,8 @@ resource "google_apikeys_key" "deployment" {
 
 # API key intended to be used during local development
 resource "google_apikeys_key" "development" {
-  display_name = "places_api_key_development"
-  name         = "places_api_key_development"
+  display_name = "places-api-key-development"
+  name         = "places-api-key-development"
   project      = data.terraform_remote_state.holi_infra_state.outputs.shared_project_id
 
   restrictions {
@@ -166,7 +166,7 @@ resource "google_apikeys_key" "development" {
   depends_on = [google_project_service.service]
 }
 
-output "places_api_key_development" {
+output "places-api-key-development" {
   value = google_apikeys_key.development.key_string
   sensitive = true
 }

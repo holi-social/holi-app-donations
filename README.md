@@ -134,16 +134,16 @@ names. In order to be able to use the Places API, requests are equipped with an
 API key that is used by the Places API to match the project and for billing
 purposes. Within the deployment, three keys are in usage (managed by terraform):
 
-1. `places-autocompletion-api-staging`
-2. `places-autocompletion-api-production`
-3. `places-autocompletion-api-review` (shared amongst all review environments)
+1. `places-api-key-staging`
+2. `places-api-key-production`
+3. `places-api-key-review` (shared amongst all review environments)
 
 In addition we deploy another key intended for local development:
 
-4. `places-autocompletion-api-development`
+4. `places-api-key-development`
 
 You can receive the key value via
-`terraform output --raw places_api_key_development`.
+`terraform output --raw places-api-key-development`.
 
 ## Local execution
 
