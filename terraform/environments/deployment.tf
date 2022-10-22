@@ -134,6 +134,7 @@ resource "google_cloud_run_service_iam_policy" "donations_api" {
 
 # TODO maybe only separate keys for staging, production and review environments
 resource "google_apikeys_key" "primary" {
+  display_name = "places-autocompletion-api-${local.environment_name}"
   name         = "places-autocompletion-api-${local.environment_name}"
   project      = google_cloud_run_service.donations_api.project
 
