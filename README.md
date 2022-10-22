@@ -14,6 +14,7 @@ The backend for handling donation projects, including a GraphQL API for
     - [Testing](#testing)
     - [Tasks](#tasks)
     - [VS Code extension](#vs-code-extension)
+  - [Places API](#places-api)
   - [Local execution](#local-execution)
   - [Continuous Integration and Deployment](#continuous-integration-and-deployment)
     - [Skipping parts of CI](#skipping-parts-of-ci)
@@ -125,6 +126,24 @@ It should already be enabled for the workspace, for more information check the
 JetBrains also offers a
 [plugin](https://plugins.jetbrains.com/plugin/14382-deno) for WebStorm and other
 JetBrains IDEs.
+
+## Places API
+
+The server uses Google Places API to create autocomplete predictions for city
+names. In order to be able to use the Places API, requests are equipped with an
+API key that is used by the Places API to match the project and for billing
+purposes. Within the deployment, three keys are in usage (managed by terraform):
+
+1. `places-autocompletion-api-staging`
+2. `places-autocompletion-api-production`
+3. `places-autocompletion-api-review` (shared amongst all review environments)
+
+In addition we deploy another key intended for local development:
+
+4. `places-autocompletion-api-development`
+
+You can receive the key value via
+`terraform output --raw places_api_key_development`.
 
 ## Local execution
 
