@@ -78,12 +78,16 @@ const resolvers = {
   },
 };
 
-export const createGraphQLServer = (options: { withCache: boolean }) => {
+export const CACHE_TTL_MS_DEFAULT = 60_000;
+
+export const createGraphQLServer = (
+  options: { withCache: boolean; cacheTtlMs?: number },
+) => {
   const plugins = !options.withCache ? [] : [useResponseCache({
     session: () => null, // global cache, shared by all users
     ttlPerSchemaCoordinate: {
-      "Query.projects": 10_000,
-      "Query.project": 10_000,
+      "Query.projects": options.cacheTtlMs || CACHE_TTL_MS_DEFAULT,
+      "Query.project": options.cacheTtlMs || CACHE_TTL_MS_DEFAULT,
     },
   })];
   return createYoga({
@@ -96,13 +100,15 @@ export const createGraphQLServer = (options: { withCache: boolean }) => {
 // deno-lint-ignore no-explicit-any
 export type GraphQLServer = any;
 
-export const graphQLServer: GraphQLServer = createGraphQLServer({
-  withCache: true,
-});
-
-export const startServer = (port: number): Promise<void> => {
+export const startServer = (
+  options: { port: number; withCache: boolean; cacheTtlMs?: number },
+): Promise<void> => {
+  const graphQLServer: GraphQLServer = createGraphQLServer({
+    withCache: options.withCache,
+    cacheTtlMs: options.cacheTtlMs,
+  });
   return serve(graphQLServer.handleRequest, {
-    port: port,
+    port: options.port,
     onListen({ port, hostname }) {
       console.log(
         `Server started at http://${
