@@ -139,7 +139,7 @@ resource "google_apikeys_key" "primary" {
 
   restrictions {
     api_targets {
-      service = "places-backend"
+      service = "places-backend.googleapis.com"
     }
   }
 
