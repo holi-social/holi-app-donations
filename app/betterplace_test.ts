@@ -142,8 +142,10 @@ const processGqlRequest = (
     }),
   });
   return graphQLServer.handleRequest(request)
-    .then((response) => response.json())
-    .then((response) => response.data);
+    // deno-lint-ignore no-explicit-any
+    .then((response: any) => response.json())
+    // deno-lint-ignore no-explicit-any
+    .then((response: any) => response.data);
 };
 
 const queryProjects = (

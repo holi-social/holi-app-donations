@@ -10,12 +10,7 @@ import {
   fetchProject,
   fetchProjects,
 } from "./betterplace.ts";
-import {
-  createServer,
-  serve,
-  useResponseCache,
-  YogaServerInstance,
-} from "./deps.ts";
+import { createSchema, createYoga, serve, useResponseCache } from "./deps.ts";
 
 const typeDefs = `
     type Picture {
@@ -91,18 +86,15 @@ export const createGraphQLServer = (options: { withCache: boolean }) => {
       "Query.project": 10_000,
     },
   })];
-  return createServer({
-    schema: { resolvers, typeDefs },
+  return createYoga({
+    schema: createSchema({ resolvers, typeDefs }),
     graphiql: true,
     plugins,
   });
 };
 
-export type GraphQLServer = YogaServerInstance<
-  Record<never, never>,
-  Record<never, never>,
-  Project
->;
+// deno-lint-ignore no-explicit-any
+export type GraphQLServer = any;
 
 export const graphQLServer: GraphQLServer = createGraphQLServer({
   withCache: true,
