@@ -56,15 +56,11 @@ export interface PlaceSubstringMatch {
   offset: number;
 }
 
-export interface PlaceStructuredFormatting {
+export interface Place {
+  description: string;
   mainText: string;
   mainTextMatchedSubstrings: PlaceSubstringMatch[];
   secondaryText: string;
-}
-
-export interface Place {
-  description: string;
-  structuredFormatting: PlaceStructuredFormatting;
 }
 
 export interface PlacesParameters {

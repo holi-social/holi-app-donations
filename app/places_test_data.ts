@@ -87,28 +87,24 @@ export const placesResponseHam = {
 export const expectedGqlResponseHam = [
   {
     "description": "Hamburg, Germany",
-    "structuredFormatting": {
-      "mainText": "Hamburg",
-      "secondaryText": "Germany",
-      "mainTextMatchedSubstrings": [
-        {
-          "length": 3,
-          "offset": 0,
-        },
-      ],
-    },
+    "mainText": "Hamburg",
+    "secondaryText": "Germany",
+    "mainTextMatchedSubstrings": [
+      {
+        "length": 3,
+        "offset": 0,
+      },
+    ],
   },
   {
     "description": "Hamilton, ON, Canada",
-    "structuredFormatting": {
-      "mainText": "Hamilton",
-      "secondaryText": "ON, Canada",
-      "mainTextMatchedSubstrings": [
-        {
-          "length": 3,
-          "offset": 0,
-        },
-      ],
-    },
+    "mainText": "Hamilton",
+    "secondaryText": "ON, Canada",
+    "mainTextMatchedSubstrings": [
+      {
+        "length": 3,
+        "offset": 0,
+      },
+    ],
   },
 ];

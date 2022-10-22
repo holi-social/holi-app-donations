@@ -1,8 +1,5 @@
-import {
-  PlacesApiResults,
-  PlacesApiStructuredFormatting,
-} from "./places_api_types.ts";
-import { Place, PlacesParameters, PlaceStructuredFormatting } from "./types.ts";
+import { PlacesApiResults } from "./places_api_types.ts";
+import { Place, PlacesParameters } from "./types.ts";
 import { log } from "./deps.ts";
 
 const buildPlacesUrl = (
@@ -21,19 +18,12 @@ const buildPlacesUrl = (
 export const transformPlacesResult = (
   results: PlacesApiResults,
 ): Place[] => {
-  const transformStructuredFormatting = (
-    s: PlacesApiStructuredFormatting,
-  ): PlaceStructuredFormatting => ({
-    mainText: s.main_text,
-    mainTextMatchedSubstrings: s.main_text_matched_substrings,
-    secondaryText: s.secondary_text,
-  });
-
   return results.predictions.map((prediction) => ({
     description: prediction.description,
-    structuredFormatting: transformStructuredFormatting(
-      prediction.structured_formatting,
-    ),
+    mainText: prediction.structured_formatting.main_text,
+    mainTextMatchedSubstrings:
+      prediction.structured_formatting.main_text_matched_substrings,
+    secondaryText: prediction.structured_formatting.secondary_text,
   }));
 };
 

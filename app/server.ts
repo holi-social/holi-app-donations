@@ -58,15 +58,11 @@ const typeDefs = gql`
         offset: Int!
     }
 
-    type PlaceStructuredFormatting {
+    type Place {
+        description: String!
         mainText: String!
         mainTextMatchedSubstrings: [PlaceSubstringMatch]!
         secondaryText: String!
-    }
-
-    type Place {
-        description: String!
-        structuredFormatting: PlaceStructuredFormatting!
     }
 
     type Query {

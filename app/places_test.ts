@@ -21,13 +21,11 @@ const emptyResponse = {
 
 const placeFragment = `
   description
-  structuredFormatting {
-    mainText
-    secondaryText
-    mainTextMatchedSubstrings {
-      length
-      offset
-    }
+  mainText
+  secondaryText
+  mainTextMatchedSubstrings {
+    length
+    offset
   }
 `;
 
