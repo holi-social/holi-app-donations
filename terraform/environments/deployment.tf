@@ -47,6 +47,10 @@ resource "google_cloud_run_service" "donations_api" {
           name  = "ENVIRONMENT"
           value = local.environment
         }
+        env {
+          name  = "PLACES_API_KEY"
+          value = google_apikeys_key.primary.key_string
+        }
         # env {
         #   name  = "ENVIRONMENT_ID"
         #   value = local.environment_name
@@ -132,11 +136,11 @@ resource "google_cloud_run_service_iam_policy" "donations_api" {
   policy_data = data.google_iam_policy.donations_api.policy_data
 }
 
-# TODO maybe only separate keys for staging, production and review environments
 resource "google_apikeys_key" "primary" {
-  display_name = "places-autocompletion-api-${local.environment_name}"
-  name         = "places-autocompletion-api-${local.environment_name}"
-  project      = google_cloud_run_service.donations_api.project
+  # restrict API keys to "staging", "production" and "review" to not generate too many API keys (for every review env)
+  display_name = "places-autocompletion-api-${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
+  name         = "places-autocompletion-api-${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
+  project      = data.terraform_remote_state.holi_infra_state.outputs.shared_project_id
 
   restrictions {
     api_targets {
@@ -147,7 +151,22 @@ resource "google_apikeys_key" "primary" {
   depends_on = [google_project_service.service]
 }
 
-output "maps_api_key" {
+# API key intended to be used during local development
+resource "google_apikeys_key" "development" {
+  display_name = "places-autocompletion-api-development"
+  name         = "places-autocompletion-api-development"
+  project      = data.terraform_remote_state.holi_infra_state.outputs.shared_project_id
+
+  restrictions {
+    api_targets {
+      service = "places-backend.googleapis.com"
+    }
+  }
+
+  depends_on = [google_project_service.service]
+}
+
+output "places_api_key_development" {
   value = google_apikeys_key.primary.key_string
   sensitive = true
 }
