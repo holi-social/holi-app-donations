@@ -138,12 +138,14 @@ purposes. Within the deployment, three keys are in usage (managed by terraform):
 2. `places-api-key-production`
 3. `places-api-key-review` (shared amongst all review environments)
 
-In addition we deploy another key intended for local development:
+In addition we deploy another key intended for local development (via
+`holi-infra`):
 
-4. `places-api-key-development`
+4. `places-api-key-dev`
 
-You can receive the key value via
-`terraform output --raw places-api-key-development`.
+This key is shared amongst all environments. You can receive the key in the
+`holi-infra` project value via
+`terraform refresh; terraform output --raw places-api-key-dev`.
 
 ## Local execution
 
