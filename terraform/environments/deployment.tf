@@ -138,8 +138,8 @@ resource "google_cloud_run_service_iam_policy" "donations_api" {
 
 resource "google_apikeys_key" "deployment" {
   # restrict API keys to "staging", "production" and "review" to not generate too many API keys (for every review env)
-  display_name = "places-api-key-${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
-  name         = "places-api-key-${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
+  display_name = "places-api-key-${local.environment_name}"
+  name         = "places-api-key-${local.environment_name}"
   project      = data.terraform_remote_state.holi_infra_state.outputs.shared_project_id
 
   restrictions {
