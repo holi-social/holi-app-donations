@@ -1,4 +1,3 @@
-import { gql } from "./deps.ts";
 import {
   Initiative,
   PlacesParameters,
@@ -13,9 +12,9 @@ import {
   fetchProjects,
 } from "./betterplace.ts";
 import { fetchPlaces } from "./places.ts";
-import { GraphQLHTTP, makeExecutableSchema, Server } from "./deps.ts";
+import { createSchema, createYoga, serve, useResponseCache } from "./deps.ts";
 
-const typeDefs = gql`
+const typeDefs = `
     type Picture {
         type: String!
         url: String!
@@ -73,7 +72,7 @@ const typeDefs = gql`
     }
 `;
 
-const createResolvers = (serverConfig: ServerConfig) => ({
+const createResolvers = (config: ServerConfig) => ({
   Query: {
     projects: (
       // deno-lint-ignore no-explicit-any
@@ -89,7 +88,7 @@ const createResolvers = (serverConfig: ServerConfig) => ({
       // deno-lint-ignore no-explicit-any
       _parent: any,
       parameters: PlacesParameters,
-    ) => fetchPlaces(parameters, serverConfig.placesApiKey || ""),
+    ) => fetchPlaces(parameters, config.placesApiKey || ""),
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),
@@ -99,32 +98,58 @@ const createResolvers = (serverConfig: ServerConfig) => ({
   },
 });
 
+export const DEFAULT_PORT = 8001;
+export const DEFAULT_CACHE_ENABLED = true;
+export const DEFAULT_CACHE_TTL_MS_BETTERPLACE = 60_000;
+export const DEFAULT_CACHE_TTL_MS_PLACES = 60_000 * 60 * 24;
+
 export interface ServerConfig {
-  placesApiKey?: string;
+  port?: number; // default: 8001
+  cacheEnabled?: boolean; // default: true
+  cacheTtlMsBetterplace?: number; // default: 60 seconds
+  cacheTtlMsPlaces?: number; // default: 24 hours
+  placesApiKey?: string; // must be given in order for places calls to work
 }
 
-export const createSchema = (serverConfig: ServerConfig) =>
-  makeExecutableSchema({
-    resolvers: createResolvers(serverConfig),
-    typeDefs,
-  });
-
-export const createMiddleware = (serverConfig: ServerConfig) =>
-  GraphQLHTTP<Request>({
-    schema: createSchema(serverConfig),
+export const createGraphQLServer = (
+  config: ServerConfig,
+): GraphQLServer => {
+  const plugins = (config.cacheEnabled || DEFAULT_CACHE_ENABLED)
+    ? [useResponseCache({
+      session: () => null, // global cache, shared by all users
+      ttlPerSchemaCoordinate: {
+        "Query.projects": config.cacheTtlMsBetterplace ||
+          DEFAULT_CACHE_TTL_MS_BETTERPLACE,
+        "Query.project": config.cacheTtlMsBetterplace ||
+          DEFAULT_CACHE_TTL_MS_BETTERPLACE,
+        "Query.places": config.cacheTtlMsBetterplace ||
+          DEFAULT_CACHE_TTL_MS_PLACES,
+      },
+    })]
+    : [];
+  const resolvers = createResolvers(config);
+  return createYoga({
+    schema: createSchema({ resolvers, typeDefs }),
     graphiql: true,
+    plugins,
   });
+};
 
-export const createRequestHandler =
-  (serverConfig: ServerConfig) => async (req: Request) => {
-    const { pathname } = new URL(req.url);
-    return pathname === "/graphql"
-      ? await createMiddleware(serverConfig)(req)
-      : new Response("Not Found", { status: 404 });
-  };
+// deno-lint-ignore no-explicit-any
+export type GraphQLServer = any;
 
-export const createServer = (port: number, serverConfig: ServerConfig) =>
-  new Server({
-    handler: createRequestHandler(serverConfig),
-    port: port,
+export const startServer = (
+  config: ServerConfig,
+): Promise<void> => {
+  const graphQLServer: GraphQLServer = createGraphQLServer(config);
+  return serve(graphQLServer.handleRequest, {
+    port: config.port || DEFAULT_PORT,
+    onListen({ port, hostname }) {
+      console.log(
+        `Server started at http://${
+          hostname === "0.0.0.0" ? "localhost" : hostname
+        }:${port}/graphql`,
+      );
+    },
   });
+};

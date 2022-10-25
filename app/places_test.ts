@@ -14,6 +14,7 @@ import {
   placesResponseHam,
 } from "./places_test_data.ts";
 import { Place } from "./types.ts";
+import { createGraphQLServer, GraphQLServer } from "./server.ts";
 
 const emptyResponse = {
   predictions: [],
@@ -37,8 +38,11 @@ const placesQuery = (input: string) => `
 }
 `;
 
-const queryPlaces = async (query: string): Promise<Place[]> => {
-  return (await processGqlRequest(query))?.places as Place[];
+const queryPlaces = async (
+  graphQLServer: GraphQLServer,
+  query: string,
+): Promise<Place[]> => {
+  return (await processGqlRequest(graphQLServer, query))?.places as Place[];
 };
 
 setupLogging("test");
@@ -64,7 +68,8 @@ describe("places", () => {
 
   it("correctly parses result and returns", async () => {
     fetchStub = stubFetch(placesResponseHam);
-    const places = await queryPlaces(placesQuery("Ham"));
+    const graphQLServer = createGraphQLServer({});
+    const places = await queryPlaces(graphQLServer, placesQuery("Ham"));
     assertEquals(places, expectedGqlResponseHam);
   });
 });
