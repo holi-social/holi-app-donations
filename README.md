@@ -19,6 +19,8 @@ The backend for handling donation projects, including a GraphQL API for
   - [Continuous Integration and Deployment](#continuous-integration-and-deployment)
     - [Skipping parts of CI](#skipping-parts-of-ci)
       - [noenv Branches](#noenv-branches)
+  - [Runtime / Deployment](#runtime--deployment)
+    - [Configuration](#configuration)
 
 <!-- /TOC -->
 
@@ -186,3 +188,15 @@ When you prefix your branch name with `noenv/` (e.g. `noenv/my-readme-update`)
 the pipeline only lints & builds, but does not publish, deploy or run e2e test.
 This saves quite some time. Obviously, many things go untested so only use this
 if "you know what you're doing".
+
+## Runtime / Deployment
+
+### Configuration
+
+| Environment Variable     | Default Value | Description                                |
+| ------------------------ | ------------- | ------------------------------------------ |
+| PORT                     | 8001          | the port to listen on                      |
+| CACHE_ENABLED            | true          | wether or not to enable caching            |
+| CACHE_TTL_MS_BETTERPLACE | 60 seconds    | time-to-live in ms for betterplace caching |
+| CACHE_TTL_MS_PLACES      | 24 hours      | time-to-live in ms for places caching      |
+| PLACES_API_KEY           | undefined     | Google Maps Places API key                 |

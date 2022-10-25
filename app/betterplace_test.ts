@@ -244,7 +244,7 @@ describe("betterplace", () => {
   it("correctly parses project list", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-    const graphQLServer = createGraphQLServer({ enableCache: false });
+    const graphQLServer = createGraphQLServer({ cacheEnabled: false });
     const result = await queryProjects(graphQLServer);
 
     assertEquals(result, expectedProjectsResponse);
@@ -253,7 +253,7 @@ describe("betterplace", () => {
   it("correctly retrieves a project by ID", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-    const graphQLServer = createGraphQLServer({ enableCache: false });
+    const graphQLServer = createGraphQLServer({ cacheEnabled: false });
     const result = await queryProject(graphQLServer);
 
     assertEquals(result, expectedResult);
@@ -288,7 +288,7 @@ describe("betterplace", () => {
         ),
     });
 
-    const graphQLServer = createGraphQLServer({ enableCache: false });
+    const graphQLServer = createGraphQLServer({ cacheEnabled: false });
     const result = await queryProjects(graphQLServer);
 
     const project1 = result.projects.find((p) => p.id === 1);
@@ -304,7 +304,7 @@ describe("betterplace", () => {
       ),
     });
 
-    const graphQLServer = createGraphQLServer({ enableCache: false });
+    const graphQLServer = createGraphQLServer({ cacheEnabled: false });
     const result = await queryProjects(graphQLServer);
 
     const project1 = result.projects.find((p) => p.id === 1);
@@ -317,7 +317,7 @@ describe("betterplace", () => {
 
   it("returns cached results on recurring requests", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
-    const graphQLServer = createGraphQLServer({ enableCache: true });
+    const graphQLServer = createGraphQLServer({ cacheEnabled: true });
     const result = await queryProjects(graphQLServer);
     assertEquals(result, expectedProjectsResponse);
 

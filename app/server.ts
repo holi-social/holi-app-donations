@@ -98,27 +98,35 @@ const createResolvers = (config: ServerConfig) => ({
   },
 });
 
-export const DEFAULT_ENABLE_CACHE = true;
-export const DEFAULT_CACHE_TTL_MS = 60_000;
 export const DEFAULT_PORT = 8001;
+export const DEFAULT_CACHE_ENABLED = true;
+export const DEFAULT_CACHE_TTL_MS_BETTERPLACE = 60_000;
+export const DEFAULT_CACHE_TTL_MS_PLACES = 60_000 * 60 * 24;
 
 export interface ServerConfig {
   port?: number; // default: 8001
-  enableCache?: boolean; // default: true
-  cacheTtlMs?: number; // default: 60 seconds
+  cacheEnabled?: boolean; // default: true
+  cacheTtlMsBetterplace?: number; // default: 60 seconds
+  cacheTtlMsPlaces?: number; // default: 24 hours
   placesApiKey?: string; // must be given in order for places calls to work
 }
 
 export const createGraphQLServer = (
   config: ServerConfig,
 ): GraphQLServer => {
-  const plugins = !config.enableCache ? [] : [useResponseCache({
-    session: () => null, // global cache, shared by all users
-    ttlPerSchemaCoordinate: {
-      "Query.projects": config.cacheTtlMs || DEFAULT_CACHE_TTL_MS,
-      "Query.project": config.cacheTtlMs || DEFAULT_CACHE_TTL_MS,
-    },
-  })];
+  const plugins = (config.cacheEnabled || DEFAULT_CACHE_ENABLED)
+    ? [useResponseCache({
+      session: () => null, // global cache, shared by all users
+      ttlPerSchemaCoordinate: {
+        "Query.projects": config.cacheTtlMsBetterplace ||
+          DEFAULT_CACHE_TTL_MS_BETTERPLACE,
+        "Query.project": config.cacheTtlMsBetterplace ||
+          DEFAULT_CACHE_TTL_MS_BETTERPLACE,
+        "Query.places": config.cacheTtlMsBetterplace ||
+          DEFAULT_CACHE_TTL_MS_PLACES,
+      },
+    })]
+    : [];
   const resolvers = createResolvers(config);
   return createYoga({
     schema: createSchema({ resolvers, typeDefs }),
