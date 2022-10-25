@@ -1,5 +1,5 @@
 import { returnsNext, stub } from "./dev_deps.ts";
-import { createMiddleware } from "./server.ts";
+import { GraphQLServer } from "./server.ts";
 
 export type ResponsePayload = Record<string, unknown> | Error;
 
@@ -12,9 +12,9 @@ export const stubFetch = (response: ResponsePayload) => {
 };
 
 export const processGqlRequest = (
+  graphQLServer: GraphQLServer,
   query: string,
   variables: Record<string, unknown> = {},
-  placesApiKey?: string,
 ): Promise<Record<string, unknown> | undefined | null> => {
   const request = new Request("http://localhost:8001/graphql", {
     method: "POST",
@@ -28,7 +28,9 @@ export const processGqlRequest = (
       query: query,
     }),
   });
-  return createMiddleware({ placesApiKey: placesApiKey })(request)
-    .then((response) => response.json())
-    .then((response) => response.data);
+  return graphQLServer.handleRequest(request)
+    // deno-lint-ignore no-explicit-any
+    .then((response: any) => response.json())
+    // deno-lint-ignore no-explicit-any
+    .then((response: any) => response.data);
 };

@@ -210,13 +210,14 @@ export const fetchProject = (
   { id, locale = "en" }: ProjectParameters,
 ): Promise<Project> => {
   const url = `${BASE_URL}/${locale}/api_v4/projects/${id}.json`;
+  log.debug(`fetching project from ${url}`);
   const start = Date.now();
   return fetch(url)
     .then((result) => result.json())
     .then(transformProject)
     .then((result) => {
       const duration = Date.now() - start;
-      log.debug(`fetching project with ID ${id} took ${duration} ms`);
+      log.debug(`  fetching project with ID ${id} took ${duration} ms`);
       return result;
     })
     .catch((e) => {
