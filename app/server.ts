@@ -1,5 +1,6 @@
 import {
   Initiative,
+  PlacesParameters,
   Project,
   ProjectParameters,
   ProjectsParameters,
@@ -10,6 +11,7 @@ import {
   fetchProject,
   fetchProjects,
 } from "./betterplace.ts";
+import { fetchPlaces } from "./places.ts";
 import { createSchema, createYoga, serve, useResponseCache } from "./deps.ts";
 
 const typeDefs = `
@@ -46,18 +48,31 @@ const typeDefs = `
     }
 
     type ProjectsResponse {
-      totalResults: Int!
-      projects: [Project]!
+        totalResults: Int!
+        projects: [Project]!
+    }
+
+    type PlaceSubstringMatch {
+        length: Int!
+        offset: Int!
+    }
+
+    type Place {
+        description: String!
+        mainText: String!
+        mainTextMatchedSubstrings: [PlaceSubstringMatch]!
+        secondaryText: String!
     }
 
     type Query {
         # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
         projects(offset: Int, limit: Int, locale: String, location: String): ProjectsResponse!
         project(id: Int!): Project!
+        places(input: String!): [Place]!
     }
 `;
 
-const resolvers = {
+const createResolvers = (config: ServerConfig) => ({
   Query: {
     projects: (
       // deno-lint-ignore no-explicit-any
@@ -69,6 +84,11 @@ const resolvers = {
       _parent: any,
       parameters: ProjectParameters,
     ) => fetchProject(parameters),
+    places: (
+      // deno-lint-ignore no-explicit-any
+      _parent: any,
+      parameters: PlacesParameters,
+    ) => fetchPlaces(parameters, config.placesApiKey || ""),
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),
@@ -76,20 +96,30 @@ const resolvers = {
   Initiative: {
     url: (args: Initiative) => fetchInitiativeUrl(args),
   },
-};
+});
 
-export const CACHE_TTL_MS_DEFAULT = 60_000;
+export const DEFAULT_ENABLE_CACHE = true;
+export const DEFAULT_CACHE_TTL_MS = 60_000;
+export const DEFAULT_PORT = 8001;
+
+export interface ServerConfig {
+  port?: number; // default: 8001
+  enableCache?: boolean; // default: true
+  cacheTtlMs?: number; // default: 60 seconds
+  placesApiKey?: string; // must be given in order for places calls to work
+}
 
 export const createGraphQLServer = (
-  options: { withCache: boolean; cacheTtlMs?: number },
-) => {
-  const plugins = !options.withCache ? [] : [useResponseCache({
+  config: ServerConfig,
+): GraphQLServer => {
+  const plugins = !config.enableCache ? [] : [useResponseCache({
     session: () => null, // global cache, shared by all users
     ttlPerSchemaCoordinate: {
-      "Query.projects": options.cacheTtlMs || CACHE_TTL_MS_DEFAULT,
-      "Query.project": options.cacheTtlMs || CACHE_TTL_MS_DEFAULT,
+      "Query.projects": config.cacheTtlMs || DEFAULT_CACHE_TTL_MS,
+      "Query.project": config.cacheTtlMs || DEFAULT_CACHE_TTL_MS,
     },
   })];
+  const resolvers = createResolvers(config);
   return createYoga({
     schema: createSchema({ resolvers, typeDefs }),
     graphiql: true,
@@ -101,14 +131,11 @@ export const createGraphQLServer = (
 export type GraphQLServer = any;
 
 export const startServer = (
-  options: { port: number; withCache: boolean; cacheTtlMs?: number },
+  config: ServerConfig,
 ): Promise<void> => {
-  const graphQLServer: GraphQLServer = createGraphQLServer({
-    withCache: options.withCache,
-    cacheTtlMs: options.cacheTtlMs,
-  });
+  const graphQLServer: GraphQLServer = createGraphQLServer(config);
   return serve(graphQLServer.handleRequest, {
-    port: options.port,
+    port: config.port || DEFAULT_PORT,
     onListen({ port, hostname }) {
       console.log(
         `Server started at http://${

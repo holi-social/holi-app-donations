@@ -10,10 +10,12 @@ resource "random_id" "main" {
 
 resource "google_project_service" "service" {
   for_each = toset([
-    "run.googleapis.com",
-    "servicemanagement.googleapis.com",
-    "servicecontrol.googleapis.com",
+    "apikeys.googleapis.com",
     "endpoints.googleapis.com",
+    "places-backend.googleapis.com",
+    "run.googleapis.com",
+    "servicecontrol.googleapis.com",
+    "servicemanagement.googleapis.com",
   ])
 
   service = each.key
@@ -44,6 +46,10 @@ resource "google_cloud_run_service" "donations_api" {
         env {
           name  = "ENVIRONMENT"
           value = local.environment
+        }
+        env {
+          name  = "PLACES_API_KEY"
+          value = google_apikeys_key.deployment.key_string
         }
         # env {
         #   name  = "ENVIRONMENT_ID"
@@ -128,4 +134,19 @@ resource "google_cloud_run_service_iam_policy" "donations_api" {
   service  = google_cloud_run_service.donations_api.name
 
   policy_data = data.google_iam_policy.donations_api.policy_data
+}
+
+resource "google_apikeys_key" "deployment" {
+  # restrict API keys to "staging", "production" and "review" to not generate too many API keys (for every review env)
+  display_name = "places-api-key-${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
+  name         = "places-api-key-${local.environment_name == "staging" ? "staging" : local.environment_name == "production" ? "production" : "review"}"
+  project      = data.terraform_remote_state.holi_infra_state.outputs.shared_project_id
+
+  restrictions {
+    api_targets {
+      service = "places-backend.googleapis.com"
+    }
+  }
+
+  depends_on = [google_project_service.service]
 }

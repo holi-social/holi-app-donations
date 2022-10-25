@@ -10,8 +10,12 @@ import {
   Stub,
   stub,
 } from "./dev_deps.ts";
+import {
+  processGqlRequest,
+  ResponsePayload,
+  stubFetch,
+} from "./common_test.ts";
 import { fetchProject, fetchProjects } from "./betterplace.ts";
-import { createGraphQLServer, GraphQLServer } from "./server.ts";
 import setupLogging from "./logging.ts";
 import {
   apiOrganisation1,
@@ -25,6 +29,7 @@ import {
   expectedResult,
 } from "./betterplace_test_data.ts";
 import { Project, ProjectsResponse } from "./types.ts";
+import { createGraphQLServer, GraphQLServer } from "./server.ts";
 
 const emptyResponse = {
   total_entries: 0,
@@ -33,15 +38,6 @@ const emptyResponse = {
 };
 
 type UrlPrefix = string;
-type ResponsePayload = Record<string, unknown> | Error;
-
-const stubFetch = (response: ResponsePayload) => {
-  return stub(
-    globalThis,
-    "fetch",
-    returnsNext([Promise.resolve(new Response(JSON.stringify(response)))]),
-  );
-};
 
 const stubFetchByUrlPrefix = (
   responses: Record<UrlPrefix, ResponsePayload>,
@@ -123,30 +119,6 @@ const projectFragment = `
     }
     url
   }`;
-
-const processGqlRequest = (
-  graphQLServer: GraphQLServer,
-  query: string,
-  variables: Record<string, unknown> = {},
-): Promise<Record<string, unknown> | undefined | null> => {
-  const request = new Request("http://localhost:8001/graphql", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "accept": "*/*",
-    },
-    body: JSON.stringify({
-      operationName: null,
-      variables: variables,
-      query: query,
-    }),
-  });
-  return graphQLServer.handleRequest(request)
-    // deno-lint-ignore no-explicit-any
-    .then((response: any) => response.json())
-    // deno-lint-ignore no-explicit-any
-    .then((response: any) => response.data);
-};
 
 const queryProjects = (
   graphQLServer: GraphQLServer,
@@ -272,7 +244,7 @@ describe("betterplace", () => {
   it("correctly parses project list", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-    const graphQLServer = createGraphQLServer({ withCache: false });
+    const graphQLServer = createGraphQLServer({ enableCache: false });
     const result = await queryProjects(graphQLServer);
 
     assertEquals(result, expectedProjectsResponse);
@@ -281,7 +253,7 @@ describe("betterplace", () => {
   it("correctly retrieves a project by ID", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-    const graphQLServer = createGraphQLServer({ withCache: false });
+    const graphQLServer = createGraphQLServer({ enableCache: false });
     const result = await queryProject(graphQLServer);
 
     assertEquals(result, expectedResult);
@@ -316,7 +288,7 @@ describe("betterplace", () => {
         ),
     });
 
-    const graphQLServer = createGraphQLServer({ withCache: false });
+    const graphQLServer = createGraphQLServer({ enableCache: false });
     const result = await queryProjects(graphQLServer);
 
     const project1 = result.projects.find((p) => p.id === 1);
@@ -332,7 +304,7 @@ describe("betterplace", () => {
       ),
     });
 
-    const graphQLServer = createGraphQLServer({ withCache: false });
+    const graphQLServer = createGraphQLServer({ enableCache: false });
     const result = await queryProjects(graphQLServer);
 
     const project1 = result.projects.find((p) => p.id === 1);
@@ -345,7 +317,7 @@ describe("betterplace", () => {
 
   it("returns cached results on recurring requests", async () => {
     fetchStub = stubFetchByUrlPrefix(validApiResponses);
-    const graphQLServer = createGraphQLServer({ withCache: true });
+    const graphQLServer = createGraphQLServer({ enableCache: true });
     const result = await queryProjects(graphQLServer);
     assertEquals(result, expectedProjectsResponse);
 
