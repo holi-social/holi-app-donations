@@ -29,18 +29,22 @@ export interface Initiative {
 }
 
 export interface Author {
-  name: string
-  picture: Picture[]
+  name: string;
+  picture: Picture[];
 }
 
 export interface News {
-  id: number
-  title: string
-  publishDate: string
-  author?: Author
-  body: string
-  url: string
-}  
+  id: number;
+  title: string;
+  publishDate: string;
+  author?: Author;
+  body: string;
+  url: string;
+}
+
+export interface NewsParameters {
+  limit?: number;
+}
 
 export interface Project {
   id: number;
@@ -58,7 +62,8 @@ export interface Project {
   summary: string | undefined | null;
   description: string | undefined | null;
   donationUrl: string;
-  news: News;
+  newsUrl: string;
+  news: News[];
   newsCount: number;
 }
 

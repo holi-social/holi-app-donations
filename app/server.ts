@@ -1,5 +1,6 @@
 import {
   Initiative,
+  NewsParameters,
   PlacesParameters,
   Project,
   ProjectParameters,
@@ -7,8 +8,8 @@ import {
 } from "./types.ts";
 import {
   fetchCategories,
-  fetchNews,
   fetchInitiativeUrl,
+  fetchNews,
   fetchProject,
   fetchProjects,
 } from "./betterplace.ts";
@@ -61,7 +62,7 @@ const typeDefs = `
         description: String
         donationUrl: String
         newsUrl: String
-        news: [News]!
+        news(limit: Int): [News]!
         newsCount: Int!
     }
 
@@ -110,7 +111,8 @@ const createResolvers = (config: ServerConfig) => ({
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),
-    news: (args: Project) => fetchNews(args)
+    news: (args: Project, parameters: NewsParameters = {}) =>
+      fetchNews(args, parameters),
   },
   Initiative: {
     url: (args: Initiative) => fetchInitiativeUrl(args),

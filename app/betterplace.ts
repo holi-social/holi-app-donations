@@ -1,14 +1,16 @@
 import { log, Parser } from "./deps.ts";
 import {
   Initiative,
-  Picture,
   News,
+  NewsParameters,
+  Picture,
   Project,
   ProjectParameters,
   ProjectsParameters,
   ProjectsResponse,
 } from "./types.ts";
 import {
+  ApiBlogPost,
   ApiCarrier,
   ApiLink,
   ApiOrganisation,
@@ -16,7 +18,6 @@ import {
   ApiProject,
   ApiProjectCategory,
   ApiProjectsResponse,
-  ApiBlogPost,
 } from "./api_types.ts";
 
 const BASE_URL = "https://api.betterplace.org";
@@ -120,18 +121,20 @@ const transformProjectCategory = (
 ): string => apiProjectCategory.slug;
 
 const transformNews = (
-  blogPost: ApiBlogPost
+  blogPost: ApiBlogPost,
 ): News => ({
   id: blogPost.id,
   title: blogPost.title,
   publishDate: blogPost.published_at,
-  author: blogPost.author ? {
-    name: blogPost.author.name,
-    picture: transformPicture(blogPost.author.picture),
-  } : undefined,
+  author: blogPost.author
+    ? {
+      name: blogPost.author.name,
+      picture: transformPicture(blogPost.author.picture),
+    }
+    : undefined,
   body: cleanUpHtml(blogPost.body),
   url: blogPost.links.find((p) => p.rel === "platform")!.href,
-})
+});
 
 export const fetchCategories = (
   projectId: number,
@@ -156,14 +159,16 @@ export const fetchCategories = (
 
 export const fetchNews = (
   project: Project,
+  parameters: NewsParameters,
 ): Promise<News[]> => {
-  const href = project.newsUrl
+  const href = project.newsUrl +
+    `?per_page=${parameters.limit || 5}&order=published_at:desc`;
   log.debug(`  fetching blog posts from ${href}`);
 
   return fetch(href)
-  .then((result) => result.json())
-  .then((json) => (json.data as ApiBlogPost[]))
-  .then((news) => news.map(transformNews)) 
+    .then((result) => result.json())
+    .then((json) => (json.data as ApiBlogPost[]))
+    .then((news) => news.map(transformNews))
     .catch((e) => {
       log.error(
         `Error while fetching blog posts from '${href}', using empty array to handle this (somewhat) gracefully`,
@@ -171,7 +176,7 @@ export const fetchNews = (
       );
       return [];
     });
-}
+};
 
 export const fetchInitiativeUrl = (
   initiative: Initiative,
