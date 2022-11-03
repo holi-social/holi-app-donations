@@ -37,7 +37,7 @@ export interface News {
   id: number;
   title: string;
   publishDate: string;
-  author?: Author;
+  author?: Author | null;
   body: string;
   url: string;
 }
