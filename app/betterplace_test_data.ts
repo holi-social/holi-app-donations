@@ -1,11 +1,13 @@
 import {
+  ApiBlogPost,
+  ApiBlogPostResponse,
   ApiCarrier,
   ApiOrganisation,
   ApiProject,
   ApiProjectCategory,
   ApiProjectsResponse,
 } from "./api_types.ts";
-import { Initiative, Project, ProjectsResponse } from "./types.ts";
+import { Initiative, News, Project, ProjectsResponse } from "./types.ts";
 
 const apiProjectCarrier1: ApiCarrier = {
   id: 1,
@@ -90,6 +92,7 @@ export const apiProject1: ApiProject = {
   donations_count: 42,
   progress_percentage: 33,
   open_amount_in_cents: 421234,
+  blog_post_count: 2,
   profile_picture: {
     links: [
       {
@@ -106,13 +109,21 @@ export const apiProject1: ApiProject = {
       },
     ],
   },
-  links: [{
-    "rel": "categories",
-    "href": "https://api.betterplace.org/en/api_v4/projects/1/categories.json",
-  }, {
-    "rel": "new_donation",
-    "href": "https://www.betterplace.org/de/donate/platform/projects/1",
-  }],
+  links: [
+    {
+      "rel": "categories",
+      "href":
+        "https://api.betterplace.org/en/api_v4/projects/1/categories.json",
+    },
+    {
+      "rel": "new_donation",
+      "href": "https://www.betterplace.org/de/donate/platform/projects/1",
+    },
+    {
+      "rel": "blog_posts",
+      "href": "https://api.betterplace.org/de/api_v4/blog_posts/1.json",
+    },
+  ],
   carrier: apiProjectCarrier1,
 };
 
@@ -126,6 +137,7 @@ const apiProject2: ApiProject = {
   donations_count: 13,
   progress_percentage: 10,
   open_amount_in_cents: 1234567,
+  blog_post_count: 1,
   profile_picture: {
     links: [],
   },
@@ -135,6 +147,9 @@ const apiProject2: ApiProject = {
   }, {
     "rel": "new_donation",
     "href": "https://www.betterplace.org/de/donate/platform/projects/2",
+  }, {
+    "rel": "blog_posts",
+    "href": "https://api.betterplace.org/de/api_v4/blog_posts/2.json",
   }],
   carrier: apiProjectCarrier1,
 };
@@ -150,6 +165,7 @@ const apiProject3: ApiProject = {
   donations_count: 0,
   progress_percentage: 0,
   open_amount_in_cents: 4200000,
+  blog_post_count: 0,
   profile_picture: {
     links: [],
   },
@@ -159,6 +175,9 @@ const apiProject3: ApiProject = {
   }, {
     "rel": "new_donation",
     "href": "https://www.betterplace.org/de/donate/platform/projects/3",
+  }, {
+    "rel": "blog_posts",
+    "href": "https://api.betterplace.org/de/api_v4/blog_posts/3.json",
   }],
   carrier: apiProjectCarrier2,
 };
@@ -173,6 +192,7 @@ const apiProject4: ApiProject = {
   donations_count: 0,
   progress_percentage: 0,
   open_amount_in_cents: 1200000,
+  blog_post_count: 0,
   profile_picture: {
     links: [],
   },
@@ -182,6 +202,9 @@ const apiProject4: ApiProject = {
   }, {
     "rel": "new_donation",
     "href": "https://www.betterplace.org/de/donate/platform/projects/4",
+  }, {
+    "rel": "blog_posts",
+    "href": "https://api.betterplace.org/de/api_v4/blog_posts/4.json",
   }],
   carrier: apiProjectCarrier2,
 };
@@ -226,6 +249,104 @@ export const categoriesResult = (
     per_page: 20,
     data: categories,
   };
+};
+
+const blogPost1: ApiBlogPost = {
+  id: 1,
+  "title": "Mirwais",
+  "published_at": "2009-03-11T20:46:27+01:00",
+  "body": "<p>Lorem ipsum</p>",
+  "author": {
+    "name": "Miray Heinrich",
+    "picture": {
+      "links": [
+        {
+          "rel": "fill_100x100",
+          "href":
+            "https://betterplace-assets.betterplace.org/uploads/user/profile_picture/000/009/238/fill_100x100_bp1584570257_original_maxn_skate.jpg",
+        },
+        {
+          "rel": "original",
+          "href":
+            "https://betterplace-assets.betterplace.org/uploads/user/profile_picture/000/009/238/crop_original_bp1584570257_original_maxn_skate.jpg",
+        },
+      ],
+    },
+  },
+  "links": [
+    {
+      "rel": "platform",
+      "href":
+        "https://www.betterplace.org/de/projects/1114-unterstuetze-skateistan-sport-bildung-fuer-kinder/news/3917#ppp-sticky-anchor",
+    },
+  ],
+};
+
+const blogPost2: ApiBlogPost = {
+  id: 1,
+  "title": "Blog post 2",
+  "published_at": "2009-03-11T20:46:27+01:00",
+  "body": '<p>Lorem ipsum</p><img src="www.example.com/test.jpg"',
+  "links": [
+    {
+      "rel": "platform",
+      "href":
+        "https://www.betterplace.org/de/projects/1114-unterstuetze-skateistan-sport-bildung-fuer-kinder/news/3917#ppp-sticky-anchor",
+    },
+  ],
+};
+
+export const apiBlogPosts1: ApiBlogPostResponse = {
+  total_entries: 2,
+  data: [blogPost1, blogPost2],
+};
+
+export const apiBlogPosts2: ApiBlogPostResponse = {
+  total_entries: 1,
+  data: [blogPost1],
+};
+
+export const apiBlogPostsEmpty: ApiBlogPostResponse = {
+  total_entries: 0,
+  data: [],
+};
+
+const expectedNews1: News = {
+  author: {
+    name: "Miray Heinrich",
+    picture: [
+      {
+        height: 100,
+        type: "fill",
+        url:
+          "https://betterplace-assets.betterplace.org/uploads/user/profile_picture/000/009/238/fill_100x100_bp1584570257_original_maxn_skate.jpg",
+        width: 100,
+      },
+      {
+        height: null,
+        type: "original",
+        url:
+          "https://betterplace-assets.betterplace.org/uploads/user/profile_picture/000/009/238/crop_original_bp1584570257_original_maxn_skate.jpg",
+        width: null,
+      },
+    ],
+  },
+  body: "Lorem ipsum",
+  id: 1,
+  publishDate: "2009-03-11T20:46:27+01:00",
+  title: "Mirwais",
+  url:
+    "https://www.betterplace.org/de/projects/1114-unterstuetze-skateistan-sport-bildung-fuer-kinder/news/3917#ppp-sticky-anchor",
+};
+
+const expectedNews2: News = {
+  author: null,
+  body: "Lorem ipsum",
+  id: 1,
+  publishDate: "2009-03-11T20:46:27+01:00",
+  title: "Blog post 2",
+  url:
+    "https://www.betterplace.org/de/projects/1114-unterstuetze-skateistan-sport-bildung-fuer-kinder/news/3917#ppp-sticky-anchor",
 };
 
 const expectedInitiative1: Initiative = {
@@ -311,6 +432,9 @@ const expectedProjects: Project[] = [
     ],
     initiative: expectedInitiative1,
     donationUrl: "https://www.betterplace.org/de/donate/platform/projects/1",
+    newsUrl: "https://api.betterplace.org/de/api_v4/blog_posts/1.json",
+    news: [expectedNews1, expectedNews2],
+    newsCount: 2,
   },
   {
     id: 2,
@@ -326,6 +450,9 @@ const expectedProjects: Project[] = [
     picture: [],
     initiative: expectedInitiative1,
     donationUrl: "https://www.betterplace.org/de/donate/platform/projects/2",
+    newsUrl: "https://api.betterplace.org/de/api_v4/blog_posts/2.json",
+    news: [expectedNews1],
+    newsCount: 1,
   },
   {
     id: 3,
@@ -341,6 +468,9 @@ const expectedProjects: Project[] = [
     picture: [],
     initiative: expectedInitiative2,
     donationUrl: "https://www.betterplace.org/de/donate/platform/projects/3",
+    newsUrl: "https://api.betterplace.org/de/api_v4/blog_posts/3.json",
+    news: [],
+    newsCount: 0,
   },
   {
     id: 4,
@@ -356,6 +486,9 @@ const expectedProjects: Project[] = [
     picture: [],
     initiative: expectedInitiative2,
     donationUrl: "https://www.betterplace.org/de/donate/platform/projects/4",
+    newsUrl: "https://api.betterplace.org/de/api_v4/blog_posts/4.json",
+    news: [],
+    newsCount: 0,
   },
 ];
 
@@ -397,4 +530,7 @@ export const expectedResult: Project = {
   ],
   initiative: expectedInitiative1,
   donationUrl: "https://www.betterplace.org/de/donate/platform/projects/1",
+  newsUrl: "https://api.betterplace.org/de/api_v4/blog_posts/1.json",
+  news: [expectedNews1, expectedNews2],
+  newsCount: 2,
 };

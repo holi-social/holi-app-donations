@@ -1,6 +1,8 @@
 import { log, Parser } from "./deps.ts";
 import {
   Initiative,
+  News,
+  NewsParameters,
   Picture,
   Project,
   ProjectParameters,
@@ -8,6 +10,7 @@ import {
   ProjectsResponse,
 } from "./types.ts";
 import {
+  ApiBlogPost,
   ApiCarrier,
   ApiLink,
   ApiOrganisation,
@@ -96,6 +99,9 @@ const transformProject = (
     summary: project.summary,
     description: project.description && cleanUpHtml(project.description),
     donationUrl: project.links.find((p) => p.rel === "new_donation")!.href,
+    newsUrl: project.links.find((p) => p.rel === "blog_posts")!.href,
+    news: [], // will be set by separate resolver
+    newsCount: project.blog_post_count,
   };
 };
 
@@ -114,6 +120,22 @@ const transformProjectCategory = (
   apiProjectCategory: ApiProjectCategory,
 ): string => apiProjectCategory.slug;
 
+const transformNews = (
+  blogPost: ApiBlogPost,
+): News => ({
+  id: blogPost.id,
+  title: blogPost.title,
+  publishDate: blogPost.published_at,
+  author: blogPost.author
+    ? {
+      name: blogPost.author.name,
+      picture: transformPicture(blogPost.author.picture),
+    }
+    : undefined,
+  body: cleanUpHtml(blogPost.body),
+  url: blogPost.links.find((p) => p.rel === "platform")!.href,
+});
+
 export const fetchCategories = (
   projectId: number,
 ): Promise<string[]> => {
@@ -129,6 +151,27 @@ export const fetchCategories = (
     .catch((e) => {
       log.error(
         `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
+        e,
+      );
+      return [];
+    });
+};
+
+export const fetchNews = (
+  project: Project,
+  parameters: NewsParameters,
+): Promise<News[]> => {
+  const href = project.newsUrl +
+    `?per_page=${parameters.limit || 5}&order=published_at:desc`;
+  log.debug(`  fetching blog posts from ${href}`);
+
+  return fetch(href)
+    .then((result) => result.json())
+    .then((json) => (json.data as ApiBlogPost[]))
+    .then((news) => news.map(transformNews))
+    .catch((e) => {
+      log.error(
+        `Error while fetching blog posts from '${href}', using empty array to handle this (somewhat) gracefully`,
         e,
       );
       return [];

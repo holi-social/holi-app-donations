@@ -18,6 +18,9 @@ import {
 import { fetchProject, fetchProjects } from "./betterplace.ts";
 import setupLogging from "./logging.ts";
 import {
+  apiBlogPosts1,
+  apiBlogPosts2,
+  apiBlogPostsEmpty,
   apiOrganisation1,
   apiOrganisation2,
   apiProject1,
@@ -86,6 +89,9 @@ const validApiResponses = {
     apiOrganisation2,
   "https://api.betterplace.org/de/api_v4/organisations/4.json":
     apiOrganisation2,
+  "https://api.betterplace.org/de/api_v4/blog_posts/1.json": apiBlogPosts1,
+  "https://api.betterplace.org/de/api_v4/blog_posts/2.json": apiBlogPosts2,
+  "https://api.betterplace.org/de/api_v4/blog_posts/": apiBlogPostsEmpty,
 };
 
 const projectFragment = `
@@ -118,7 +124,26 @@ const projectFragment = `
       height
     }
     url
-  }`;
+  }
+  news(limit: 3) {
+    id
+    title
+    body
+    publishDate
+    author {
+      name
+      picture {
+        type
+        url
+        width
+        height
+      }
+    }
+    url
+  }
+  newsUrl
+  newsCount
+`;
 
 const queryProjects = (
   graphQLServer: GraphQLServer,
@@ -313,6 +338,22 @@ describe("betterplace", () => {
       project1.initiative.url,
       "https://api.betterplace.org/de/api_v4/organisations/1.json",
     );
+  });
+
+  it("returns empty news for invalid blog post responses", async () => {
+    fetchStub = stubFetchByUrlPrefix({
+      ...validApiResponses,
+      "https://api.betterplace.org/de/api_v4/blog_posts/1.json": new Error(
+        "Expected error",
+      ),
+    });
+
+    const graphQLServer = createGraphQLServer({ cacheEnabled: false });
+    const result = await queryProjects(graphQLServer);
+
+    const project1 = result.projects.find((p) => p.id === 1);
+    assertExists(project1);
+    assertEquals(project1.news, []);
   });
 
   it("returns cached results on recurring requests", async () => {
