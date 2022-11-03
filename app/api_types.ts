@@ -32,6 +32,7 @@ export type ApiProject = {
   profile_picture: ApiPicture | undefined;
   summary: string | undefined | null;
   description: string | undefined | null;
+  blog_post_count: number;
 };
 
 /** only covers the parts of the API response type that were using */
@@ -50,6 +51,25 @@ export type ApiProjectCategory = {
   name: string;
   slug: ApiProjectCategorySlug;
   updated_at: string; // ISO datetime
+};
+
+type ApiAuthor = {
+  name: string;
+  picture: ApiPicture;
+};
+
+export type ApiBlogPost = {
+  id: number;
+  title: string;
+  published_at: string;
+  author?: ApiAuthor;
+  body: string;
+  links: Array<ApiLink>;
+};
+
+export type ApiBlogPostResponse = {
+  total_entries: number;
+  data: ApiBlogPost[];
 };
 
 export type ApiOrganisation = {
