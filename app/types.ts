@@ -28,6 +28,20 @@ export interface Initiative {
   url?: string;
 }
 
+export interface Author {
+  name: string
+  picture: Picture[]
+}
+
+export interface News {
+  id: number
+  title: string
+  publishDate: string
+  author?: Author
+  body: string
+  url: string
+}  
+
 export interface Project {
   id: number;
   title: string;
@@ -44,6 +58,8 @@ export interface Project {
   summary: string | undefined | null;
   description: string | undefined | null;
   donationUrl: string;
+  news: News;
+  newsCount: number;
 }
 
 export interface ProjectsResponse {

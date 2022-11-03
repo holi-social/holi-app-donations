@@ -7,6 +7,7 @@ import {
 } from "./types.ts";
 import {
   fetchCategories,
+  fetchNews,
   fetchInitiativeUrl,
   fetchProject,
   fetchProjects,
@@ -31,6 +32,20 @@ const typeDefs = `
         url: String
     }
 
+    type Author {
+      name: String!
+      picture: [Picture]
+    }
+
+    type News {
+      id: Int!
+      title: String!
+      publishDate: String!
+      author: Author
+      body: String!
+      url: String!
+    }    
+
     type Project {
         id: Int!
         title: String!
@@ -45,6 +60,9 @@ const typeDefs = `
         summary: String
         description: String
         donationUrl: String
+        newsUrl: String
+        news: [News]!
+        newsCount: Int!
     }
 
     type ProjectsResponse {
@@ -92,6 +110,7 @@ const createResolvers = (config: ServerConfig) => ({
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),
+    news: (args: Project) => fetchNews(args)
   },
   Initiative: {
     url: (args: Initiative) => fetchInitiativeUrl(args),
