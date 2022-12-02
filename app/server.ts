@@ -143,7 +143,7 @@ export const createGraphQLServer = (
           DEFAULT_CACHE_TTL_MS_BETTERPLACE,
         "Query.project": config.cacheTtlMsBetterplace ||
           DEFAULT_CACHE_TTL_MS_BETTERPLACE,
-        "Query.places": config.cacheTtlMsBetterplace ||
+        "Query.places": config.cacheTtlMsPlaces ||
           DEFAULT_CACHE_TTL_MS_PLACES,
       },
     })]
