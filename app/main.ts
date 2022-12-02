@@ -10,8 +10,6 @@ const serverConfigFromEnv = () => {
     port: asNumber(Deno.env.get("PORT")),
     cacheEnabled: asBoolean(Deno.env.get("CACHE_ENABLED")),
     cacheTtlMsBetterplace: asNumber(Deno.env.get("CACHE_TTL_MS_BETTERPLACE")),
-    cacheTtlMsPlaces: asNumber(Deno.env.get("CACHE_TTL_MS_PLACES")),
-    placesApiKey: Deno.env.get("PLACES_API_KEY"),
   };
 };
 
