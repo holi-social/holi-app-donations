@@ -5,6 +5,4 @@ locals {
 
   # the dns name can be at most 64 chars in total
   dns_name = "${trimsuffix(substr(local.environment, 0, 34), ".-")}.${data.terraform_remote_state.holi_donations_api_common_state.outputs.dns_donations_api_domain}"
-
-  places_api_key = local.environment == "production" ? data.terraform_remote_state.holi_infra_state.outputs.google-places-api-key-production : local.environment == "staging" ? data.terraform_remote_state.holi_infra_state.outputs.google-places-api-key-staging : data.terraform_remote_state.holi_infra_state.outputs.google-places-api-key-dev
 }
