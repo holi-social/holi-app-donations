@@ -216,7 +216,10 @@ const buildProjectsUrl = (
     "facets",
     "completed:false|closed:false|prohibit_donations:false",
   );
-  url.searchParams.append("order", "rank:DESC");
+  url.searchParams.append(
+    "order",
+    "score:desc|completed:asc|rank:desc|last_donation_at:desc",
+  );
   url.searchParams.append("page", page.toString());
   url.searchParams.append("per_page", limit.toString());
   if (location) {
