@@ -50,7 +50,7 @@ cache_lint_test:
   image: 'denoland/deno:alpine-1.26.0'
   stage: 'test'
   script:
-    - deno cache --lock=lock.json app/deps.ts app/dev_deps.ts
+    - deno cache --lock=deno.lock app/deps.ts app/dev_deps.ts
     - deno fmt --check
     - deno lint
     - deno test

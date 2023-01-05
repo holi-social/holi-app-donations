@@ -6,11 +6,11 @@ EXPOSE 8001
 # Prefer not to run as root.
 USER deno
 
-COPY lock.json .
+COPY deno.lock .
 COPY deno.json .
 COPY ./app ./app
 
-RUN deno cache --lock=lock.json app/deps.ts
+RUN deno cache --lock=deno.lock app/deps.ts
 RUN deno cache app/main.ts
 
-CMD ["deno", "run", "--allow-net", "--allow-env", "--lock=lock.json", "--cached-only", "app/main.ts"]
+CMD ["deno", "run", "--allow-net", "--allow-env", "--lock=deno.lock", "--cached-only", "app/main.ts"]

@@ -10,8 +10,6 @@ resource "random_id" "main" {
 
 resource "google_project_service" "service" {
   for_each = toset([
-    "apikeys.googleapis.com",
-    "endpoints.googleapis.com",
     "run.googleapis.com",
     "servicecontrol.googleapis.com",
     "servicemanagement.googleapis.com",
@@ -66,7 +64,7 @@ resource "google_cloud_run_service" "donations_api" {
     # template annotations: https://cloud.google.com/run/docs/reference/rpc/google.cloud.run.v1#revisiontemplate
     metadata {
       annotations = {
-        "autoscaling.knative.dev/minScale" = local.environment == "production" ? "0" : "0"
+        "autoscaling.knative.dev/minScale" = local.environment == "production" ? "1" : "0"
         "autoscaling.knative.dev/maxScale" = local.environment == "production" ? "10" : "1"
         # Use the VPC Connector
         "run.googleapis.com/vpc-access-connector" = data.terraform_remote_state.holi_infra_state.outputs.vpc_access_connector_name
