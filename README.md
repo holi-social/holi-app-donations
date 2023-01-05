@@ -63,7 +63,7 @@ dependency run
 vr updateDeps
 ```
 
-to update the `lock.json` file (similiar to Node.js `package.lock` including
+to update the `deno.lock` file (similiar to Node.js `package.lock` including
 hashes).
 
 To just install and cache dependencies locally or force a reload of
