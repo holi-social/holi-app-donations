@@ -189,7 +189,7 @@ describe("betterplace", () => {
   it("calls api with correct parameters", async () => {
     fetchStub = stubFetch(emptyResponse);
 
-    await fetchProjects({ locale: "de", limit: 10, offset: 20 });
+    await fetchProjects({ limit: 10, offset: 20 }, "de");
 
     const expectedUrl = new URL(
       "https://api.betterplace.org/de/api_v4/projects.json?" +
@@ -201,12 +201,7 @@ describe("betterplace", () => {
   it("calls api with correct parameters for location search", async () => {
     fetchStub = stubFetch(emptyResponse);
 
-    await fetchProjects({
-      locale: "de",
-      limit: 10,
-      offset: 20,
-      location: "Hamburg",
-    });
+    await fetchProjects({ limit: 10, offset: 20, location: "Hamburg" }, "de");
 
     const expectedUrl = new URL(
       "https://api.betterplace.org/de/api_v4/projects.json?" +
@@ -220,11 +215,10 @@ describe("betterplace", () => {
     fetchStub = stubFetch(emptyResponse);
 
     await fetchProjects({
-      locale: "de",
       limit: 10,
       offset: 20,
       location: "Straße 123, 20535 Hamburg",
-    });
+    }, "de");
 
     const expectedUrl = new URL(
       "https://api.betterplace.org/de/api_v4/projects.json?" +
@@ -237,7 +231,7 @@ describe("betterplace", () => {
   it("calls api with correct parameters for empty location search", async () => {
     fetchStub = stubFetch(emptyResponse);
 
-    await fetchProjects({ locale: "de", limit: 10, offset: 20, location: "" });
+    await fetchProjects({ limit: 10, offset: 20, location: "" }, "de");
 
     const expectedUrl = new URL(
       "https://api.betterplace.org/de/api_v4/projects.json?" +
@@ -250,6 +244,18 @@ describe("betterplace", () => {
     fetchStub = stubFetch(emptyResponse);
 
     await fetchProjects({});
+
+    const expectedUrl = new URL(
+      "https://api.betterplace.org/en/api_v4/projects.json?" +
+        "facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC&page=1&per_page=5",
+    );
+    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+  });
+
+  it("uses default locale for api call if language is not supported", async () => {
+    fetchStub = stubFetch(emptyResponse);
+
+    await fetchProjects({}, "es");
 
     const expectedUrl = new URL(
       "https://api.betterplace.org/en/api_v4/projects.json?" +
@@ -350,7 +356,6 @@ describe("betterplace", () => {
 
     const graphQLServer = createGraphQLServer({ cacheEnabled: false });
     const result = await queryProjects(graphQLServer);
-
     const project1 = result.projects.find((p) => p.id === 1);
     assertExists(project1);
     assertEquals(project1.news, []);

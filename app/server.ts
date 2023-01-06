@@ -71,7 +71,7 @@ const typeDefs = `
 
     type Query {
         # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
-        projects(offset: Int, limit: Int, locale: String, location: String): ProjectsResponse!
+        projects(offset: Int, limit: Int, location: String): ProjectsResponse!
         project(id: Int!): Project!
     }
 `;
@@ -82,12 +82,14 @@ const createResolvers = (_config: ServerConfig) => ({
       // deno-lint-ignore no-explicit-any
       _parent: any,
       parameters: ProjectsParameters = {},
-    ) => fetchProjects(parameters),
+      context: GraphQLContext,
+    ) => fetchProjects(parameters, context.language),
     project: (
       // deno-lint-ignore no-explicit-any
       _parent: any,
       parameters: ProjectParameters,
-    ) => fetchProject(parameters),
+      context: GraphQLContext,
+    ) => fetchProject(parameters, context.language),
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),
@@ -128,11 +130,30 @@ export const createGraphQLServer = (
     schema: createSchema({ resolvers, typeDefs }),
     graphiql: true,
     plugins,
+    context: (context: GraphQLContext) => {
+      const language =
+        (context.params?.extensions?.headers || {})["accept-language"];
+      return {
+        ...context,
+        language,
+      };
+    },
   });
 };
 
 // deno-lint-ignore no-explicit-any
 export type GraphQLServer = any;
+
+type GraphQLContext = {
+  params?: {
+    extensions?: {
+      headers?: {
+        [key: string]: string;
+      };
+    };
+  };
+  language?: string;
+};
 
 export const startServer = (
   config: ServerConfig,

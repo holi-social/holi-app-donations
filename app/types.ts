@@ -1,14 +1,10 @@
-export type Locale = "de" | "en";
-
 export interface ProjectsParameters {
-  locale?: Locale;
   limit?: number;
   offset?: number;
   location?: string;
 }
 
 export interface ProjectParameters {
-  locale?: Locale;
   id: number;
 }
 
