@@ -210,9 +210,8 @@ function _debugP<In>(desc: string | undefined = undefined) {
 }
 
 const getLocaleForLanguage = (languages = "") =>
-  languages.split(",").find((language) =>
-    SUPPORTED_LOCALES.includes(language)
-  ) || DEFAULT_LOCALE;
+  languages.split(",").map((language) => language.split("-")[0])
+    .find((language) => SUPPORTED_LOCALES.includes(language)) || DEFAULT_LOCALE;
 
 const buildProjectsUrl = (
   { limit = 5, offset = 0, location }: ProjectsParameters,

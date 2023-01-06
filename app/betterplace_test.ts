@@ -252,6 +252,18 @@ describe("betterplace", () => {
     assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
   });
 
+  it("extracts locale for api call from country spefic language", async () => {
+    fetchStub = stubFetch(emptyResponse);
+
+    await fetchProjects({}, "de-DE");
+
+    const expectedUrl = new URL(
+      "https://api.betterplace.org/de/api_v4/projects.json?" +
+        "facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC&page=1&per_page=5",
+    );
+    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+  });
+
   it("uses default locale for api call if language is not supported", async () => {
     fetchStub = stubFetch(emptyResponse);
 
