@@ -22,6 +22,8 @@ import {
 
 const BASE_URL = "https://api.betterplace.org";
 const PICTURE_TYPE_REGEX = /(.*)_(\d+)x(\d+)/;
+const SUPPORTED_LOCALES = ["en", "de"];
+const DEFAULT_LOCALE = "en";
 
 const cleanUpHtml = (html: string): string => {
   let result = "";
@@ -110,7 +112,7 @@ const transformProjectsResponse = (
 ): ProjectsResponse => {
   return {
     totalResults: response.total_entries,
-    projects: response.data.map(transformProject),
+    data: response.data.map(transformProject),
   };
 };
 
@@ -207,10 +209,16 @@ function _debugP<In>(desc: string | undefined = undefined) {
   };
 }
 
+const getLocaleForLanguage = (languages = "") =>
+  languages.split(",").map((language) => language.split("-")[0])
+    .find((language) => SUPPORTED_LOCALES.includes(language)) || DEFAULT_LOCALE;
+
 const buildProjectsUrl = (
-  { locale = "en", limit = 5, offset = 0, location }: ProjectsParameters,
+  { limit = 5, offset = 0, location }: ProjectsParameters,
+  language?: string,
 ): URL => {
   const page = Math.floor(offset / limit) + 1; // page is NOT zero-based (!), i.e. first page = 1
+  const locale = getLocaleForLanguage(language);
   const url = new URL(`${BASE_URL}/${locale}/api_v4/projects.json`);
   url.searchParams.append(
     "facets",
@@ -228,8 +236,9 @@ const buildProjectsUrl = (
 
 export const fetchProjects = (
   params: ProjectsParameters,
+  langauge?: string,
 ): Promise<ProjectsResponse> => {
-  const url = buildProjectsUrl(params);
+  const url = buildProjectsUrl(params, langauge);
   const start = Date.now();
   log.debug(`fetching projects from ${url}`);
   return fetch(url)
@@ -250,8 +259,10 @@ export const fetchProjects = (
 };
 
 export const fetchProject = (
-  { id, locale = "en" }: ProjectParameters,
+  { id }: ProjectParameters,
+  language?: string,
 ): Promise<Project> => {
+  const locale = getLocaleForLanguage(language);
   const url = `${BASE_URL}/${locale}/api_v4/projects/${id}.json`;
   log.debug(`fetching project from ${url}`);
   const start = Date.now();
