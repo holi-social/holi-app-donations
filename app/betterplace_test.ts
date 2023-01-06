@@ -302,6 +302,42 @@ describe("betterplace", () => {
     assertEquals(result, expectedResult);
   });
 
+  it("calls api with correct parameters for fetching a project by ID", async () => {
+    fetchStub = stubFetch(apiProject1);
+
+    await fetchProject({ id: 1 }, "de");
+
+    const expectedUrl = "https://api.betterplace.org/de/api_v4/projects/1.json";
+    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+  });
+
+  it("uses default locale if missing for fetching a project by ID", async () => {
+    fetchStub = stubFetch(apiProject1);
+
+    await fetchProject({ id: 1 });
+
+    const expectedUrl = "https://api.betterplace.org/en/api_v4/projects/1.json";
+    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+  });
+
+  it("extracts locale from country spefic language for fetching a project by ID", async () => {
+    fetchStub = stubFetch(apiProject1);
+
+    await fetchProject({ id: 1 }, "de-DE");
+
+    const expectedUrl = "https://api.betterplace.org/de/api_v4/projects/1.json";
+    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+  });
+
+  it("uses default locale for fetching a project by ID if language is not supported", async () => {
+    fetchStub = stubFetch(apiProject1);
+
+    await fetchProject({ id: 1 }, "es");
+
+    const expectedUrl = "https://api.betterplace.org/en/api_v4/projects/1.json";
+    assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
+  });
+
   it("throws error for invalid projects response", async () => {
     fetchStub = stub(
       globalThis,
