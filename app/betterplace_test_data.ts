@@ -494,7 +494,7 @@ const expectedProjects: Project[] = [
 
 export const expectedProjectsResponse: ProjectsResponse = {
   totalResults: 123,
-  projects: expectedProjects,
+  data: expectedProjects,
 };
 
 export const expectedResult: Project = {
