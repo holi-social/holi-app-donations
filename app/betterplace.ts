@@ -112,7 +112,7 @@ const transformProjectsResponse = (
 ): ProjectsResponse => {
   return {
     totalResults: response.total_entries,
-    projects: response.data.map(transformProject),
+    data: response.data.map(transformProject),
   };
 };
 

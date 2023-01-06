@@ -152,7 +152,7 @@ const queryProjects = (
   query Projects {
     projects {
       totalResults
-      projects {
+      data {
         ${projectFragment}
       }
     }
@@ -269,7 +269,7 @@ describe("betterplace", () => {
 
     const result = await fetchProjects({});
 
-    assertEquals(result, { totalResults: 0, projects: [] });
+    assertEquals(result, { totalResults: 0, data: [] });
   });
 
   it("correctly parses project list", async () => {
@@ -322,7 +322,7 @@ describe("betterplace", () => {
     const graphQLServer = createGraphQLServer({ cacheEnabled: false });
     const result = await queryProjects(graphQLServer);
 
-    const project1 = result.projects.find((p) => p.id === 1);
+    const project1 = result.data.find((p) => p.id === 1);
     assertExists(project1);
     assertEquals(project1.categories, []);
   });
@@ -338,7 +338,7 @@ describe("betterplace", () => {
     const graphQLServer = createGraphQLServer({ cacheEnabled: false });
     const result = await queryProjects(graphQLServer);
 
-    const project1 = result.projects.find((p) => p.id === 1);
+    const project1 = result.data.find((p) => p.id === 1);
     assertExists(project1?.initiative);
     assertEquals(
       project1.initiative.url,
@@ -356,7 +356,7 @@ describe("betterplace", () => {
 
     const graphQLServer = createGraphQLServer({ cacheEnabled: false });
     const result = await queryProjects(graphQLServer);
-    const project1 = result.projects.find((p) => p.id === 1);
+    const project1 = result.data.find((p) => p.id === 1);
     assertExists(project1);
     assertEquals(project1.news, []);
   });

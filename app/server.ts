@@ -66,7 +66,7 @@ const typeDefs = `
 
     type ProjectsResponse {
         totalResults: Int!
-        projects: [Project]!
+        data: [Project]!
     }
 
     type Query {
