@@ -136,7 +136,7 @@ export const fetchCategories = (projectId: number): Promise<string[]> => {
   // betterplace translates category slugs but we need stable identifiers, therefore we default to "en"
   const href =
     `https://api.betterplace.org/en/api_v4/projects/${projectId}/categories.json`;
-  logger.info(`  fetching project categories from ${href}`);
+  logger.info(`fetching project categories from ${href}`);
   return fetch(href)
     .then((result) => result.json())
     .then((json) => json.data as Array<ApiProjectCategory>)
