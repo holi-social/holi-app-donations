@@ -4,4 +4,5 @@ export {
   createYoga,
 } from "https://cdn.skypack.dev/graphql-yoga@3.0.0-next.4";
 export { useResponseCache } from "https://cdn.skypack.dev/@graphql-yoga/plugin-response-cache@1.0.0-next.4";
+export * as log from "https://deno.land/std@0.155.0/log/mod.ts";
 export { Parser } from "https://deno.land/x/html_parser@v0.1.3/src/mod.ts";
