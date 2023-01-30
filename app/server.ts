@@ -13,6 +13,7 @@ import {
   fetchProjects,
 } from "./betterplace.ts";
 import { createSchema, createYoga, serve, useResponseCache } from "./deps.ts";
+import { logger } from "./logging.ts";
 
 const typeDefs = `
     type Picture {
@@ -111,19 +112,19 @@ export interface ServerConfig {
   cacheTtlMsBetterplace?: number; // default: 60 seconds
 }
 
-export const createGraphQLServer = (
-  config: ServerConfig,
-): GraphQLServer => {
-  const plugins = (config.cacheEnabled || DEFAULT_CACHE_ENABLED)
-    ? [useResponseCache({
-      session: () => null, // global cache, shared by all users
-      ttlPerSchemaCoordinate: {
-        "Query.projects": config.cacheTtlMsBetterplace ||
-          DEFAULT_CACHE_TTL_MS_BETTERPLACE,
-        "Query.project": config.cacheTtlMsBetterplace ||
-          DEFAULT_CACHE_TTL_MS_BETTERPLACE,
-      },
-    })]
+export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
+  const plugins = config.cacheEnabled || DEFAULT_CACHE_ENABLED
+    ? [
+      useResponseCache({
+        session: () => null, // global cache, shared by all users
+        ttlPerSchemaCoordinate: {
+          "Query.projects": config.cacheTtlMsBetterplace ||
+            DEFAULT_CACHE_TTL_MS_BETTERPLACE,
+          "Query.project": config.cacheTtlMsBetterplace ||
+            DEFAULT_CACHE_TTL_MS_BETTERPLACE,
+        },
+      }),
+    ]
     : [];
   const resolvers = createResolvers(config);
   return createYoga({
@@ -131,8 +132,9 @@ export const createGraphQLServer = (
     graphiql: true,
     plugins,
     context: (context: GraphQLContext) => {
-      const language =
-        (context.params?.extensions?.headers || {})["accept-language"];
+      const language = (context.params?.extensions?.headers || {})[
+        "accept-language"
+      ];
       return {
         ...context,
         language,
@@ -155,14 +157,12 @@ type GraphQLContext = {
   language?: string;
 };
 
-export const startServer = (
-  config: ServerConfig,
-): Promise<void> => {
+export const startServer = (config: ServerConfig): Promise<void> => {
   const graphQLServer: GraphQLServer = createGraphQLServer(config);
   return serve(graphQLServer.handleRequest, {
     port: config.port || DEFAULT_PORT,
     onListen({ port, hostname }) {
-      console.log(
+      logger.info(
         `Server started at http://${
           hostname === "0.0.0.0" ? "localhost" : hostname
         }:${port}/graphql`,

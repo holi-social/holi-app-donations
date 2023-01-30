@@ -1,4 +1,4 @@
-import { log, Parser } from "./deps.ts";
+import { Parser } from "./deps.ts";
 import {
   Initiative,
   News,
@@ -19,6 +19,7 @@ import {
   ApiProjectCategory,
   ApiProjectsResponse,
 } from "./api_types.ts";
+import { logger } from "./logging.ts";
 
 const BASE_URL = "https://api.betterplace.org";
 const PICTURE_TYPE_REGEX = /(.*)_(\d+)x(\d+)/;
@@ -41,9 +42,7 @@ const cleanUpHtml = (html: string): string => {
   return result;
 };
 
-const transformPicture = (
-  picture: ApiPicture | undefined,
-): Picture[] => {
+const transformPicture = (picture: ApiPicture | undefined): Picture[] => {
   if (!picture) {
     return [];
   }
@@ -71,9 +70,7 @@ const transformPicture = (
   });
 };
 
-const transformCarrier = (
-  carrier: ApiCarrier,
-): Initiative => {
+const transformCarrier = (carrier: ApiCarrier): Initiative => {
   return {
     id: carrier.id,
     name: carrier.name,
@@ -84,9 +81,7 @@ const transformCarrier = (
   };
 };
 
-const transformProject = (
-  project: ApiProject,
-): Project => {
+const transformProject = (project: ApiProject): Project => {
   return {
     id: project.id,
     title: project.title,
@@ -122,9 +117,7 @@ const transformProjectCategory = (
   apiProjectCategory: ApiProjectCategory,
 ): string => apiProjectCategory.slug;
 
-const transformNews = (
-  blogPost: ApiBlogPost,
-): News => ({
+const transformNews = (blogPost: ApiBlogPost): News => ({
   id: blogPost.id,
   title: blogPost.title,
   publishDate: blogPost.published_at,
@@ -138,20 +131,18 @@ const transformNews = (
   url: blogPost.links.find((p) => p.rel === "platform")!.href,
 });
 
-export const fetchCategories = (
-  projectId: number,
-): Promise<string[]> => {
+export const fetchCategories = (projectId: number): Promise<string[]> => {
   // even though the original query might use a different locale, we are using "en" as locale deliberately
   // betterplace translates category slugs but we need stable identifiers, therefore we default to "en"
   const href =
     `https://api.betterplace.org/en/api_v4/projects/${projectId}/categories.json`;
-  log.debug(`  fetching project categories from ${href}`);
+  logger.info(`  fetching project categories from ${href}`);
   return fetch(href)
     .then((result) => result.json())
-    .then((json) => (json.data as Array<ApiProjectCategory>))
+    .then((json) => json.data as Array<ApiProjectCategory>)
     .then((categories) => categories.map(transformProjectCategory))
     .catch((e) => {
-      log.error(
+      logger.error(
         `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
         e,
       );
@@ -165,14 +156,14 @@ export const fetchNews = (
 ): Promise<News[]> => {
   const href = project.newsUrl +
     `?per_page=${parameters.limit || 5}&order=published_at:desc`;
-  log.debug(`  fetching blog posts from ${href}`);
+  logger.info(`fetching blog posts from ${href}`);
 
   return fetch(href)
     .then((result) => result.json())
-    .then((json) => (json.data as ApiBlogPost[]))
+    .then((json) => json.data as ApiBlogPost[])
     .then((news) => news.map(transformNews))
     .catch((e) => {
-      log.error(
+      logger.error(
         `Error while fetching blog posts from '${href}', using empty array to handle this (somewhat) gracefully`,
         e,
       );
@@ -188,11 +179,12 @@ export const fetchInitiativeUrl = (
   }
   return fetch(initiative.url)
     .then((result) => result.json())
-    .then((organisation: ApiOrganisation) =>
-      organisation.links.find((l) => l.rel === "platform")?.href
+    .then(
+      (organisation: ApiOrganisation) =>
+        organisation.links.find((l) => l.rel === "platform")?.href,
     )
     .catch((e) => {
-      log.error(
+      logger.error(
         `Error while fetching organisation url from '${initiative.url}', using api url to handle this (somewhat) gracefully`,
         e,
       );
@@ -210,7 +202,9 @@ function _debugP<In>(desc: string | undefined = undefined) {
 }
 
 const getLocaleForLanguage = (languages = "") =>
-  languages.split(",").map((language) => language.split("-")[0])
+  languages
+    .split(",")
+    .map((language) => language.split("-")[0])
     .find((language) => SUPPORTED_LOCALES.includes(language)) || DEFAULT_LOCALE;
 
 const buildProjectsUrl = (
@@ -240,18 +234,18 @@ export const fetchProjects = (
 ): Promise<ProjectsResponse> => {
   const url = buildProjectsUrl(params, langauge);
   const start = Date.now();
-  log.debug(`fetching projects from ${url}`);
+  logger.info(`fetching projects from ${url}`);
   return fetch(url)
     .then((result) => result.json())
     .then(transformProjectsResponse)
     .then((result) => {
       const duration = Date.now() - start;
-      log.debug(`  fetching projects took ${duration} ms`);
+      logger.debug(`fetching projects took ${duration} ms`);
       return result;
     })
     .catch((e) => {
       const duration = Date.now() - start;
-      log.error(
+      logger.error(
         `Error performing request to ${url} after ${duration} ms: ${e.message}`,
       );
       throw e;
@@ -264,19 +258,19 @@ export const fetchProject = (
 ): Promise<Project> => {
   const locale = getLocaleForLanguage(language);
   const url = `${BASE_URL}/${locale}/api_v4/projects/${id}.json`;
-  log.debug(`fetching project from ${url}`);
+  logger.info(`fetching project from ${url}`);
   const start = Date.now();
   return fetch(url)
     .then((result) => result.json())
     .then(transformProject)
     .then((result) => {
       const duration = Date.now() - start;
-      log.debug(`  fetching project with ID ${id} took ${duration} ms`);
+      logger.debug(`fetching project with ID ${id} took ${duration} ms`);
       return result;
     })
     .catch((e) => {
       const duration = Date.now() - start;
-      log.error(
+      logger.error(
         `Error performing request to ${url} after ${duration} ms: ${e.message}`,
       );
       throw e;
