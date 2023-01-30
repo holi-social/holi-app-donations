@@ -16,7 +16,6 @@ import {
   stubFetch,
 } from "./common_test.ts";
 import { fetchProject, fetchProjects } from "./betterplace.ts";
-import setupLogging from "./logging.ts";
 import {
   apiBlogPosts1,
   apiBlogPosts2,
@@ -64,23 +63,13 @@ const validApiResponses = {
   "https://api.betterplace.org/en/api_v4/projects.json": apiProjectsResult,
   "https://api.betterplace.org/en/api_v4/projects/1.json": apiProject1,
   "https://api.betterplace.org/en/api_v4/projects/1/categories.json":
-    categoriesResult([
-      categoryEducation,
-    ]),
+    categoriesResult([categoryEducation]),
   "https://api.betterplace.org/en/api_v4/projects/2/categories.json":
-    categoriesResult([
-      categoryPopular,
-    ]),
+    categoriesResult([categoryPopular]),
   "https://api.betterplace.org/en/api_v4/projects/3/categories.json":
-    categoriesResult([
-      categoryEducation,
-      categoryPopular,
-    ]),
+    categoriesResult([categoryEducation, categoryPopular]),
   "https://api.betterplace.org/en/api_v4/projects/4/categories.json":
-    categoriesResult([
-      categoryEducation,
-      categoryPopular,
-    ]),
+    categoriesResult([categoryEducation, categoryPopular]),
   "https://api.betterplace.org/de/api_v4/organisations/1.json":
     apiOrganisation1,
   "https://api.betterplace.org/de/api_v4/organisations/2.json":
@@ -157,8 +146,8 @@ const queryProjects = (
       }
     }
   }`;
-  return processGqlRequest(graphQLServer, query).then((result) =>
-    result?.projects as ProjectsResponse
+  return processGqlRequest(graphQLServer, query).then(
+    (result) => result?.projects as ProjectsResponse,
   );
 };
 
@@ -176,8 +165,6 @@ const queryProject = async (graphQLServer: GraphQLServer): Promise<Project> => {
 
   return (await promise)?.project as Project;
 };
-
-setupLogging("test");
 
 describe("betterplace", () => {
   let fetchStub: Stub;
@@ -214,11 +201,14 @@ describe("betterplace", () => {
   it("properly encodes query for location search", async () => {
     fetchStub = stubFetch(emptyResponse);
 
-    await fetchProjects({
-      limit: 10,
-      offset: 20,
-      location: "Straße 123, 20535 Hamburg",
-    }, "de");
+    await fetchProjects(
+      {
+        limit: 10,
+        offset: 20,
+        location: "Straße 123, 20535 Hamburg",
+      },
+      "de",
+    );
 
     const expectedUrl = new URL(
       "https://api.betterplace.org/de/api_v4/projects.json?" +
@@ -362,9 +352,7 @@ describe("betterplace", () => {
     fetchStub = stubFetchByUrlPrefix({
       ...validApiResponses,
       "https://api.betterplace.org/en/api_v4/projects/1/categories.json":
-        new Error(
-          "Expected error",
-        ),
+        new Error("Expected error"),
     });
 
     const graphQLServer = createGraphQLServer({ cacheEnabled: false });
