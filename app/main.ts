@@ -1,7 +1,12 @@
-import { logger } from "./logging.ts";
+import { logger, LogSeverity } from "./logging.ts";
 import { startServer } from "./server.ts";
 
-logger.setUpLogger(Deno.env.get("ENVIRONMENT") || "development");
+const environment = Deno.env.get("ENVIRONMENT") || "development";
+
+logger.setUpLogger(
+  environment,
+  environment === "development" ? LogSeverity.DEFAULT : LogSeverity.INFO,
+);
 
 const serverConfigFromEnv = () => {
   const asNumber = (str?: string) => (str ? Number(str) : undefined);
