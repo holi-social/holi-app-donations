@@ -46,6 +46,15 @@ resource "google_cloud_run_service" "donations_api" {
           name  = "ENVIRONMENT"
           value = local.environment
         }
+        env {
+          name  = "CACHE_ENABLED"
+          value = "true"
+        }
+        env {
+          name  = "CACHE_TTL_MS_BETTERPLACE"
+          value = local.environment == "production" ? "86400000" : "60000"
+          # 24 hours for production, otherwise 1 minute
+        }
 
         resources {
           limits = {
