@@ -91,7 +91,7 @@ review_deploy:
   needs: ['build_docker']
   environment:
     name: review/$CI_COMMIT_REF_SLUG
-    url: https://$CI_ENVIRONMENT_SLUG.donations.apis.project-holi.org
+    url: https://$CI_ENVIRONMENT_SLUG.donations.apis.holi.social
     on_stop: review_destroy
     auto_stop_in: 1 week
   except:
@@ -145,7 +145,7 @@ staging_deploy:
   environment:
     name: staging
     deployment_tier: staging
-    url: https://staging.donations.apis.project-holi.org
+    url: https://staging.donations.apis.holi.social
   variables:
     ENVIRONMENT_ID: staging
   only:
@@ -166,7 +166,7 @@ production_deploy:
   environment:
     name: production
     deployment_tier: production
-    url: https://production.donations.apis.project-holi.org
+    url: https://production.donations.apis.holi.social
   variables:
     ENVIRONMENT_ID: production
   only:
