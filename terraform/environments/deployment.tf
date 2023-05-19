@@ -38,7 +38,7 @@ resource "google_cloud_run_service" "donations_api" {
     spec {
       service_account_name = data.terraform_remote_state.holi_donations_api_common_state.outputs.cloud_run_service_account_email
       containers {
-        image = "${data.terraform_remote_state.holi_infra_state.outputs.gcr_location}/holi-donations-api:${var.image_tag}"
+        image = "${data.terraform_remote_state.holi_infra_state.outputs.artifact_registry_location}/holi-donations-api:${var.image_tag}"
         ports {
           container_port = 8001
         }
