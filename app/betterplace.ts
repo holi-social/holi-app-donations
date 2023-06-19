@@ -1,5 +1,6 @@
 import { Parser } from "./deps.ts";
 import {
+  BetterPlaceLanguage,
   Initiative,
   News,
   NewsParameters,
@@ -23,8 +24,8 @@ import { logger } from "./logging.ts";
 
 const BASE_URL = "https://api.betterplace.org";
 const PICTURE_TYPE_REGEX = /(.*)_(\d+)x(\d+)/;
-const SUPPORTED_LOCALES = ["en", "de"];
-const DEFAULT_LOCALE = "en";
+export const SUPPORTED_LANGUAGES = ["en", "de"];
+export const DEFAULT_LANGUAGE: BetterPlaceLanguage = "en";
 
 const cleanUpHtml = (html: string): string => {
   let result = "";
@@ -201,19 +202,12 @@ function _debugP<In>(desc: string | undefined = undefined) {
   };
 }
 
-const getLocaleForLanguage = (languages = "") =>
-  languages
-    .split(",")
-    .map((language) => language.split("-")[0])
-    .find((language) => SUPPORTED_LOCALES.includes(language)) || DEFAULT_LOCALE;
-
 const buildProjectsUrl = (
   { limit = 5, offset = 0, location }: ProjectsParameters,
-  language?: string,
+  language: string = DEFAULT_LANGUAGE,
 ): URL => {
   const page = Math.floor(offset / limit) + 1; // page is NOT zero-based (!), i.e. first page = 1
-  const locale = getLocaleForLanguage(language);
-  const url = new URL(`${BASE_URL}/${locale}/api_v4/projects.json`);
+  const url = new URL(`${BASE_URL}/${language}/api_v4/projects.json`);
   url.searchParams.append(
     "facets",
     "completed:false|closed:false|prohibit_donations:false",
@@ -230,9 +224,9 @@ const buildProjectsUrl = (
 
 export const fetchProjects = (
   params: ProjectsParameters,
-  langauge?: string,
+  language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
 ): Promise<ProjectsResponse> => {
-  const url = buildProjectsUrl(params, langauge);
+  const url = buildProjectsUrl(params, language);
   const start = Date.now();
   logger.info(`fetching projects from ${url}`);
   return fetch(url)
@@ -254,10 +248,9 @@ export const fetchProjects = (
 
 export const fetchProject = (
   { id }: ProjectParameters,
-  language?: string,
+  language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
 ): Promise<Project> => {
-  const locale = getLocaleForLanguage(language);
-  const url = `${BASE_URL}/${locale}/api_v4/projects/${id}.json`;
+  const url = `${BASE_URL}/${language}/api_v4/projects/${id}.json`;
   logger.info(`fetching project from ${url}`);
   const start = Date.now();
   return fetch(url)

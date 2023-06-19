@@ -67,3 +67,5 @@ export interface ProjectsResponse {
   totalResults: number;
   data: Project[];
 }
+
+export type BetterPlaceLanguage = "de" | "en";
