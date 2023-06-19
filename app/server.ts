@@ -1,4 +1,5 @@
 import {
+  BetterPlaceLanguage,
   Initiative,
   NewsParameters,
   Project,
@@ -6,11 +7,13 @@ import {
   ProjectsParameters,
 } from "./types.ts";
 import {
+  DEFAULT_LANGUAGE,
   fetchCategories,
   fetchInitiativeUrl,
   fetchNews,
   fetchProject,
   fetchProjects,
+  SUPPORTED_LANGUAGES,
 } from "./betterplace.ts";
 import { createSchema, createYoga, serve, useResponseCache } from "./deps.ts";
 import { logger } from "./logging.ts";
@@ -112,11 +115,22 @@ export interface ServerConfig {
   cacheTtlMsBetterplace?: number; // default: 60 seconds
 }
 
+const getLanguage = (languages = "") =>
+  languages
+    .split(",")
+    .map((language) => language.split("-")[0])
+    .find((language) => SUPPORTED_LANGUAGES.includes(language)) ||
+  DEFAULT_LANGUAGE;
+
 export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
   const plugins = config.cacheEnabled || DEFAULT_CACHE_ENABLED
     ? [
       useResponseCache({
-        session: () => null, // global cache, shared by all users
+        // global cache per language, shared by all users
+        session: (request: Request) =>
+          getLanguage(
+            request.headers.get("accept-language") || DEFAULT_LANGUAGE,
+          ),
         ttlPerSchemaCoordinate: {
           "Query.projects": config.cacheTtlMsBetterplace ||
             DEFAULT_CACHE_TTL_MS_BETTERPLACE,
@@ -132,12 +146,12 @@ export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
     graphiql: true,
     plugins,
     context: (context: GraphQLContext) => {
-      const language = (context.params?.extensions?.headers || {})[
+      const languages = (context.params?.extensions?.headers || {})[
         "accept-language"
       ];
       return {
         ...context,
-        language,
+        language: getLanguage(languages),
       };
     },
   });
@@ -154,7 +168,7 @@ type GraphQLContext = {
       };
     };
   };
-  language?: string;
+  language: BetterPlaceLanguage;
 };
 
 export const startServer = (config: ServerConfig): Promise<void> => {

@@ -15,6 +15,7 @@ export const processGqlRequest = (
   graphQLServer: GraphQLServer,
   query: string,
   variables: Record<string, unknown> = {},
+  headers: Record<string, unknown> = {},
 ): Promise<Record<string, unknown> | undefined | null> => {
   const request = new Request("http://localhost:8001/graphql", {
     method: "POST",
@@ -26,6 +27,7 @@ export const processGqlRequest = (
       operationName: null,
       variables: variables,
       query: query,
+      extensions: { headers },
     }),
   });
   return graphQLServer.handleRequest(request)
