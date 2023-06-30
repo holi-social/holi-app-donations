@@ -156,6 +156,8 @@ staging_trigger_unified-api_redeployment:
   trigger:
     project: 'app/unified-api'
     branch: 'main'
+  only:
+    - main
 
 staging_e2e:
   extends: .e2e
@@ -185,3 +187,5 @@ production_trigger_unified-api_redeployment:
   trigger:
     project: 'app/unified-api'
     branch: 'production'
+  only:
+    - production
