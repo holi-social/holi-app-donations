@@ -154,7 +154,7 @@ staging_deploy:
 staging_trigger_unified-api_redeployment:
   needs: ['staging_deploy']
   trigger:
-    project: 'app/unified-api'
+    project: 'app/holi-unified-api'
     branch: 'main'
   only:
     - main
@@ -185,7 +185,7 @@ production_deploy:
 production_trigger_unified-api_redeployment:
   needs: ['production_deploy']
   trigger:
-    project: 'app/unified-api'
+    project: 'app/holi-unified-api'
     branch: 'production'
   only:
     - production
