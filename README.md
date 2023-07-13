@@ -57,7 +57,7 @@ See the [deno manual](https://deno.land/manual/tools) for more tools.
 
 All dependencies should be added in `app/deps.ts` (similiar as you would do in a
 Node.js `package.json`) for caching and integrity checks. After adding a
-dependency run
+dependency run:
 
 ```sh
 vr updateDeps
@@ -67,7 +67,7 @@ to update the `deno.lock` file (similiar to Node.js `package.lock` including
 hashes).
 
 To just install and cache dependencies locally or force a reload of
-dependencies, run
+dependencies, run:
 
 ```sh
 vr install
