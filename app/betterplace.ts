@@ -274,7 +274,7 @@ const fetchRandomPage = (
     });
 };
 
-export const fetchProjects = async (
+export const fetchProjects = (
   { offset = 0, limit = DEFAULT_PAGE_SIZE, location }: ProjectsParameters,
   language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
 ): Promise<ProjectsResponse> => {
