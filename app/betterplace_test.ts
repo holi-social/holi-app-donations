@@ -185,7 +185,7 @@ describe("betterplace", () => {
   let time: FakeTime;
 
   beforeEach(() => {
-    time = new FakeTime(new Date(2023, 8, 14));
+    time = new FakeTime(new Date(2023, 8, 13, 12));
   });
 
   afterEach(() => {
