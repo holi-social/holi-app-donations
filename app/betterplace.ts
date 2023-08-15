@@ -26,6 +26,8 @@ const BASE_URL = "https://api.betterplace.org";
 const PICTURE_TYPE_REGEX = /(.*)_(\d+)x(\d+)/;
 export const SUPPORTED_LANGUAGES = ["en", "de"];
 export const DEFAULT_LANGUAGE: BetterPlaceLanguage = "en";
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_PAGE_FOR_RANDOMIZATION = 1250;
 
 const cleanUpHtml = (html: string): string => {
   let result = "";
@@ -106,6 +108,9 @@ const transformProject = (project: ApiProject): Project => {
 const transformProjectsResponse = (
   response: ApiProjectsResponse,
 ): ProjectsResponse => {
+  if (!response.data) {
+    throw new Error(`Invalid response: ${JSON.stringify(response)}`);
+  }
   return {
     totalResults: response.total_entries,
     data: response.data.map(transformProject),
@@ -203,7 +208,7 @@ function _debugP<In>(desc: string | undefined = undefined) {
 }
 
 const buildProjectsUrl = (
-  { limit = 5, offset = 0, location }: ProjectsParameters,
+  { limit = DEFAULT_PAGE_SIZE, offset = 0, location }: ProjectsParameters,
   language: string = DEFAULT_LANGUAGE,
 ): URL => {
   const page = Math.floor(offset / limit) + 1; // page is NOT zero-based (!), i.e. first page = 1
@@ -222,7 +227,7 @@ const buildProjectsUrl = (
   return url;
 };
 
-export const fetchProjects = (
+const fetchPageOfProjects = (
   params: ProjectsParameters,
   language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
 ): Promise<ProjectsResponse> => {
@@ -244,6 +249,53 @@ export const fetchProjects = (
       );
       throw e;
     });
+};
+
+// Do not select projects from too far back and not the first two pages
+const randomPageForToday = () =>
+  (new Date().setUTCHours(0, 0, 0, 0) / 100000) % MAX_PAGE_FOR_RANDOMIZATION +
+  2;
+
+const fetchRandomPage = (
+  pageNumber: number,
+  language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
+): Promise<ProjectsResponse> => {
+  logger.info(`fetching random projects from page ${pageNumber}`);
+  const start = Date.now();
+  return fetchPageOfProjects({
+    offset: pageNumber * DEFAULT_PAGE_SIZE,
+    limit: DEFAULT_PAGE_SIZE,
+  }, language)
+    .finally(() => {
+      const duration = Date.now() - start;
+      logger.debug(
+        `fetching random projects from page ${pageNumber} took ${duration} ms`,
+      );
+    });
+};
+
+export const fetchProjects = async (
+  { offset = 0, limit = DEFAULT_PAGE_SIZE, location }: ProjectsParameters,
+  language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
+): Promise<ProjectsResponse> => {
+  // When not filtering: Each day a randomly selected page is sorted to the front
+  const randomPage = randomPageForToday();
+  const isFiltering = !!location;
+  const isFirstPageOfUnfilteredList = offset < limit && !isFiltering;
+  if (isFirstPageOfUnfilteredList) {
+    return fetchRandomPage(randomPage, language)
+      .then((result) => ({
+        ...result,
+        data: result.data.slice(0, limit),
+      }));
+  }
+  // After one randomly selected page, "normal" pagination starts with offset 0 and skips the random page that was already displayed
+  const afterRandomPage = offset > randomPage * DEFAULT_PAGE_SIZE;
+  return fetchPageOfProjects({
+    offset: (isFiltering || afterRandomPage) ? offset : offset - limit,
+    limit,
+    location,
+  }, language);
 };
 
 export const fetchProject = (
