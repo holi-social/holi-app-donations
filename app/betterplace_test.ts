@@ -43,6 +43,9 @@ const emptyResponse = {
 
 type UrlPrefix = string;
 
+const projectsUrlWithDefaultOptions =
+  "https://api.betterplace.org/de/api_v4/projects.json?facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC";
+
 const stubFetchByUrlPrefix = (
   responses: Record<UrlPrefix, ResponsePayload>,
 ) => {
@@ -175,10 +178,7 @@ const queryProject = async (
 };
 
 const urlForPage = (page = 1, pageSize = 10) =>
-  new URL(
-    "https://api.betterplace.org/de/api_v4/projects.json?" +
-      `facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC&page=${page}&per_page=${pageSize}`,
-  );
+  new URL(`${projectsUrlWithDefaultOptions}&page=${page}&per_page=${pageSize}`);
 
 describe("betterplace", () => {
   let fetchStub: Stub;
@@ -209,9 +209,8 @@ describe("betterplace", () => {
       await fetchProjects({ limit: 10, offset: 20, location: "Hamburg" }, "de");
 
       const expectedUrl = new URL(
-        "https://api.betterplace.org/de/api_v4/projects.json?" +
-          "facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC&page=3&per_page=10" +
-          "&scope=location&q=Hamburg",
+        projectsUrlWithDefaultOptions +
+          "&page=3&per_page=10&scope=location&q=Hamburg",
       );
       assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
     });
@@ -229,9 +228,8 @@ describe("betterplace", () => {
       );
 
       const expectedUrl = new URL(
-        "https://api.betterplace.org/de/api_v4/projects.json?" +
-          "facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC&page=3&per_page=10" +
-          "&scope=location&q=Stra%C3%9Fe+123%2C+20535+Hamburg",
+        projectsUrlWithDefaultOptions +
+          "&page=3&per_page=10&scope=location&q=Stra%C3%9Fe+123%2C+20535+Hamburg",
       );
       assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
     });
@@ -308,9 +306,8 @@ describe("betterplace", () => {
       await fetchProjects({ limit: 10, offset: 0, location: "Hamburg" }, "de");
 
       const expectedUrl = new URL(
-        "https://api.betterplace.org/de/api_v4/projects.json?" +
-          "facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC&page=1&per_page=10" +
-          "&scope=location&q=Hamburg",
+        projectsUrlWithDefaultOptions +
+          "&page=1&per_page=10&scope=location&q=Hamburg",
       );
       assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
     });

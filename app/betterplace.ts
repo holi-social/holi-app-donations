@@ -256,24 +256,6 @@ const randomPageForToday = () =>
   (new Date().setUTCHours(0, 0, 0, 0) / 100000) % MAX_PAGE_FOR_RANDOMIZATION +
   2;
 
-const fetchRandomPage = (
-  pageNumber: number,
-  language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
-): Promise<ProjectsResponse> => {
-  logger.info(`fetching random projects from page ${pageNumber}`);
-  const start = Date.now();
-  return fetchPageOfProjects({
-    offset: pageNumber * DEFAULT_PAGE_SIZE,
-    limit: DEFAULT_PAGE_SIZE,
-  }, language)
-    .finally(() => {
-      const duration = Date.now() - start;
-      logger.debug(
-        `fetching random projects from page ${pageNumber} took ${duration} ms`,
-      );
-    });
-};
-
 export const fetchProjects = (
   { offset = 0, limit = DEFAULT_PAGE_SIZE, location }: ProjectsParameters,
   language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
@@ -283,11 +265,14 @@ export const fetchProjects = (
   const isFiltering = !!location;
   const isFirstPageOfUnfilteredList = offset < limit && !isFiltering;
   if (isFirstPageOfUnfilteredList) {
-    return fetchRandomPage(randomPage, language)
-      .then((result) => ({
-        ...result,
-        data: result.data.slice(0, limit),
-      }));
+    logger.info(`fetching random projects from page ${randomPage}`);
+    return fetchPageOfProjects({
+      offset: randomPage * DEFAULT_PAGE_SIZE,
+      limit: DEFAULT_PAGE_SIZE,
+    }, language).then((result) => ({
+      ...result,
+      data: result.data.slice(0, limit),
+    }));
   }
   // After one randomly selected page, "normal" pagination starts with offset 0 and skips the random page that was already displayed
   const afterRandomPage = offset > randomPage * DEFAULT_PAGE_SIZE;
