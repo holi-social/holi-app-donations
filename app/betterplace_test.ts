@@ -185,7 +185,7 @@ describe("betterplace", () => {
   let time: FakeTime;
 
   beforeEach(() => {
-    time = new FakeTime(new Date(2023, 8, 13, 12));
+    time = new FakeTime(new Date(2023, 8, 12, 12));
   });
 
   afterEach(() => {
@@ -248,7 +248,7 @@ describe("betterplace", () => {
 
       await fetchProjects({}, "de");
 
-      assertSpyCall(fetchStub, 0, { args: [urlForPage(635)] });
+      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] });
     });
 
     it("queries a different random page the next day", async () => {
@@ -257,7 +257,7 @@ describe("betterplace", () => {
 
       await fetchProjects({}, "de");
 
-      assertSpyCall(fetchStub, 0, { args: [urlForPage(249)] });
+      assertSpyCall(fetchStub, 0, { args: [urlForPage(3)] });
     });
 
     it("resumes normal pagination after the first page", async () => {
@@ -275,7 +275,7 @@ describe("betterplace", () => {
       await fetchProjects({ offset: 10 }, "de");
       await fetchProjects({ offset: 20 }, "de");
 
-      assertSpyCall(fetchStub, 0, { args: [urlForPage(635)] });
+      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] });
       assertSpyCall(fetchStub, 1, { args: [urlForPage(1)] });
       assertSpyCall(fetchStub, 2, { args: [urlForPage(2)] });
     });
@@ -292,12 +292,12 @@ describe("betterplace", () => {
       );
 
       await fetchProjects({}, "de");
-      await fetchProjects({ offset: 6340 }, "de");
-      await fetchProjects({ offset: 6350 }, "de");
+      await fetchProjects({ offset: 80 }, "de");
+      await fetchProjects({ offset: 90 }, "de");
 
-      assertSpyCall(fetchStub, 0, { args: [urlForPage(635)] });
-      assertSpyCall(fetchStub, 1, { args: [urlForPage(634)] });
-      assertSpyCall(fetchStub, 2, { args: [urlForPage(636)] });
+      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] });
+      assertSpyCall(fetchStub, 1, { args: [urlForPage(8)] });
+      assertSpyCall(fetchStub, 2, { args: [urlForPage(10)] });
     });
 
     it("does not query random projects for the first page when filtering for location", async () => {

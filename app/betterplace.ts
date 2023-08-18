@@ -27,7 +27,7 @@ const PICTURE_TYPE_REGEX = /(.*)_(\d+)x(\d+)/;
 export const SUPPORTED_LANGUAGES = ["en", "de"];
 export const DEFAULT_LANGUAGE: BetterPlaceLanguage = "en";
 const DEFAULT_PAGE_SIZE = 10;
-const MAX_PAGE_FOR_RANDOMIZATION = 1250;
+const MAX_PAGE_FOR_RANDOMIZATION = 10;
 
 const cleanUpHtml = (html: string): string => {
   let result = "";
@@ -251,10 +251,9 @@ const fetchPageOfProjects = (
     });
 };
 
-// Do not select projects from too far back and not the first two pages
+// Do not select projects from too far back
 const randomPageForToday = () =>
-  (new Date().setUTCHours(0, 0, 0, 0) / 100000) % MAX_PAGE_FOR_RANDOMIZATION +
-  2;
+  (new Date().setUTCHours(0, 0, 0, 0) / 100000) % MAX_PAGE_FOR_RANDOMIZATION;
 
 export const fetchProjects = (
   { offset = 0, limit = DEFAULT_PAGE_SIZE, location }: ProjectsParameters,
