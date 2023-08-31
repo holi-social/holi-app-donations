@@ -75,7 +75,7 @@ const typeDefs = `
 
     type Query {
         # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
-        projects(offset: Int, limit: Int, location: String): ProjectsResponse!
+        projects(offset: Int = 0, limit: Int = 10, location: String): ProjectsResponse!
         project(id: Int!): Project!
     }
 `;
