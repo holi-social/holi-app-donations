@@ -87,13 +87,19 @@ const createResolvers = (_config: ServerConfig) => ({
       _parent: any,
       parameters: ProjectsParameters = {},
       context: GraphQLContext,
-    ) => _config.fake ? Promise.resolve({totalResults: 0, data: []}) : fetchProjects(parameters, context.language),
+    ) =>
+      _config.fake
+        ? Promise.resolve({ totalResults: 0, data: [] })
+        : fetchProjects(parameters, context.language),
     project: (
       // deno-lint-ignore no-explicit-any
       _parent: any,
       parameters: ProjectParameters,
       context: GraphQLContext,
-    ) => _config.fake ? Promise.resolve({}) : fetchProject(parameters, context.language),
+    ) =>
+      _config.fake
+        ? Promise.resolve({})
+        : fetchProject(parameters, context.language),
   },
   Project: {
     categories: (args: Project) => fetchCategories(args.id),
@@ -101,7 +107,8 @@ const createResolvers = (_config: ServerConfig) => ({
       _config.fake ? Promise.resolve([]) : fetchNews(args, parameters),
   },
   Initiative: {
-    url: (args: Initiative) => _config.fake ? Promise.resolve(undefined) : fetchInitiativeUrl(args),
+    url: (args: Initiative) =>
+      _config.fake ? Promise.resolve(undefined) : fetchInitiativeUrl(args),
   },
 });
 
@@ -182,8 +189,10 @@ export const startServer = (config: ServerConfig): Promise<void> => {
           hostname === "0.0.0.0" ? "localhost" : hostname
         }:${port}/graphql`,
       );
-      if(config.fake) {
-        logger.info(`Server is serving fake data due to FAKE env var set to true`)
+      if (config.fake) {
+        logger.info(
+          `Server is serving fake data due to FAKE env var set to true`,
+        );
       }
     },
   });
