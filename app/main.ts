@@ -24,9 +24,6 @@ const required = <T>(name: string, t?: T, fallback?: T): T => {
 const serverConfigFromEnv = () => {
   const asNumber = (str?: string) => (str ? Number(str) : undefined);
   const asBoolean = (str?: string) => (str ? /^true$/i.test(str) : undefined);
-  logger.info(
-    `fake ${Deno.env.get("FAKE")} ${asBoolean(Deno.env.get("FAKE"))}`,
-  );
   return {
     port: required("PORT", asNumber(Deno.env.get("PORT")), DEFAULT_PORT),
     cacheEnabled: required(
