@@ -26,11 +26,16 @@ const requiredEnv = <T>(
   }
 };
 
+const asBoolean = (str: string) => /^true$/i.test(str);
+
 const serverConfigFromEnv = () => {
-  const asBoolean = (str: string) => /^true$/i.test(str);
   return {
     port: requiredEnv("PORT", Number, DEFAULT_PORT),
-    cacheEnabled: requiredEnv("CACHE_ENABLED", asBoolean, DEFAULT_CACHE_ENABLED),
+    cacheEnabled: requiredEnv(
+      "CACHE_ENABLED",
+      asBoolean,
+      DEFAULT_CACHE_ENABLED,
+    ),
     cacheTtlMsBetterplace: requiredEnv(
       "CACHE_TTL_MS_BETTERPLACE",
       Number,
