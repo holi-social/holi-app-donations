@@ -1,10 +1,12 @@
 import {
   BetterPlaceLanguage,
   Initiative,
+  News,
   NewsParameters,
   Project,
   ProjectParameters,
   ProjectsParameters,
+  ProjectsResponse,
 } from "./types.ts";
 import {
   DEFAULT_LANGUAGE,
@@ -80,6 +82,31 @@ const typeDefs = `
     }
 `;
 
+const fakeProject: Project = {
+  id: 10,
+  title: "fake",
+  categories: [],
+  city: undefined,
+  country: undefined,
+  initiative: {
+    id: 0,
+    name: "fake",
+    city: undefined,
+    country: undefined,
+    picture: [],
+  },
+  donationsCount: 0,
+  progressPercentage: 0,
+  openAmountInCents: 0,
+  picture: [],
+  summary: undefined,
+  description: undefined,
+  donationUrl: "",
+  newsUrl: "",
+  news: [],
+  newsCount: 0,
+};
+
 const createResolvers = (_config: ServerConfig) => ({
   Query: {
     projects: (
@@ -87,21 +114,29 @@ const createResolvers = (_config: ServerConfig) => ({
       _parent: any,
       parameters: ProjectsParameters = {},
       context: GraphQLContext,
-    ) => fetchProjects(parameters, context.language),
+    ): Promise<ProjectsResponse> =>
+      _config.fake
+        ? Promise.resolve({ totalResults: 0, data: [] })
+        : fetchProjects(parameters, context.language),
     project: (
       // deno-lint-ignore no-explicit-any
       _parent: any,
       parameters: ProjectParameters,
       context: GraphQLContext,
-    ) => fetchProject(parameters, context.language),
+    ): Promise<Project> =>
+      _config.fake
+        ? Promise.resolve(fakeProject)
+        : fetchProject(parameters, context.language),
   },
   Project: {
-    categories: (args: Project) => fetchCategories(args.id),
-    news: (args: Project, parameters: NewsParameters = {}) =>
-      fetchNews(args, parameters),
+    categories: (args: Project): Promise<string[]> =>
+      _config.fake ? Promise.resolve([]) : fetchCategories(args.id),
+    news: (args: Project, parameters: NewsParameters = {}): Promise<News[]> =>
+      _config.fake ? Promise.resolve([]) : fetchNews(args, parameters),
   },
   Initiative: {
-    url: (args: Initiative) => fetchInitiativeUrl(args),
+    url: (args: Initiative): Promise<string | undefined> =>
+      _config.fake ? Promise.resolve(undefined) : fetchInitiativeUrl(args),
   },
 });
 
@@ -110,9 +145,10 @@ export const DEFAULT_CACHE_ENABLED = true;
 export const DEFAULT_CACHE_TTL_MS_BETTERPLACE = 60_000;
 
 export interface ServerConfig {
-  port?: number; // default: 8001
-  cacheEnabled?: boolean; // default: true
-  cacheTtlMsBetterplace?: number; // default: 60 seconds
+  port: number; // default: 8001
+  cacheEnabled: boolean; // default: true
+  cacheTtlMsBetterplace: number; // default: 60 seconds
+  fake: boolean; // For local development. If set, the API returns dummy data
 }
 
 const getLanguage = (languages = "") =>
@@ -123,7 +159,7 @@ const getLanguage = (languages = "") =>
   DEFAULT_LANGUAGE;
 
 export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
-  const plugins = config.cacheEnabled || DEFAULT_CACHE_ENABLED
+  const plugins = config.cacheEnabled
     ? [
       useResponseCache({
         // global cache per language, shared by all users
@@ -132,10 +168,8 @@ export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
             request.headers.get("accept-language") || DEFAULT_LANGUAGE,
           ),
         ttlPerSchemaCoordinate: {
-          "Query.projects": config.cacheTtlMsBetterplace ||
-            DEFAULT_CACHE_TTL_MS_BETTERPLACE,
-          "Query.project": config.cacheTtlMsBetterplace ||
-            DEFAULT_CACHE_TTL_MS_BETTERPLACE,
+          "Query.projects": config.cacheTtlMsBetterplace,
+          "Query.project": config.cacheTtlMsBetterplace,
         },
       }),
     ]
@@ -174,13 +208,18 @@ type GraphQLContext = {
 export const startServer = (config: ServerConfig): Promise<void> => {
   const graphQLServer: GraphQLServer = createGraphQLServer(config);
   return serve(graphQLServer.handleRequest, {
-    port: config.port || DEFAULT_PORT,
+    port: config.port,
     onListen({ port, hostname }) {
       logger.info(
         `Server started at http://${
           hostname === "0.0.0.0" ? "localhost" : hostname
         }:${port}/graphql`,
       );
+      if (config.fake) {
+        logger.info(
+          `Server is serving fake data due to FAKE env var set to true`,
+        );
+      }
     },
   });
 };

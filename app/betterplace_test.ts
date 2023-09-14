@@ -46,6 +46,13 @@ type UrlPrefix = string;
 const projectsUrlWithDefaultOptions =
   "https://api.betterplace.org/de/api_v4/projects.json?facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC";
 
+const noCacheServerConfig = {
+  cacheEnabled: false,
+  port: 0,
+  cacheTtlMsBetterplace: 0,
+  fake: false,
+};
+
 const stubFetchByUrlPrefix = (
   responses: Record<UrlPrefix, ResponsePayload>,
 ) => {
@@ -323,7 +330,7 @@ describe("betterplace", () => {
     it("correctly parses project list", async () => {
       fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-      const graphQLServer = createGraphQLServer({ cacheEnabled: false });
+      const graphQLServer = createGraphQLServer(noCacheServerConfig);
       const result = await queryProjects(graphQLServer);
 
       assertEquals(result, expectedProjectsResponse);
@@ -355,7 +362,7 @@ describe("betterplace", () => {
           new Error("Expected error"),
       });
 
-      const graphQLServer = createGraphQLServer({ cacheEnabled: false });
+      const graphQLServer = createGraphQLServer(noCacheServerConfig);
       const result = await queryProjects(graphQLServer);
 
       const project1 = result.data.find((p) => p.id === 1);
@@ -371,7 +378,7 @@ describe("betterplace", () => {
         ),
       });
 
-      const graphQLServer = createGraphQLServer({ cacheEnabled: false });
+      const graphQLServer = createGraphQLServer(noCacheServerConfig);
       const result = await queryProjects(graphQLServer);
 
       const project1 = result.data.find((p) => p.id === 1);
@@ -390,7 +397,7 @@ describe("betterplace", () => {
         ),
       });
 
-      const graphQLServer = createGraphQLServer({ cacheEnabled: false });
+      const graphQLServer = createGraphQLServer(noCacheServerConfig);
       const result = await queryProjects(graphQLServer);
       const project1 = result.data.find((p) => p.id === 1);
       assertExists(project1);
@@ -399,7 +406,12 @@ describe("betterplace", () => {
 
     it("returns cached results on recurring requests", async () => {
       fetchStub = stubFetchByUrlPrefix(validApiResponses);
-      const graphQLServer = createGraphQLServer({ cacheEnabled: true });
+      const graphQLServer = createGraphQLServer({
+        cacheEnabled: true,
+        port: 0,
+        cacheTtlMsBetterplace: 1000,
+        fake: false,
+      });
       const result = await queryProjects(graphQLServer);
       assertEquals(result, expectedProjectsResponse);
 
@@ -418,7 +430,7 @@ describe("betterplace", () => {
     it("correctly retrieves a project by ID", async () => {
       fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-      const graphQLServer = createGraphQLServer({ cacheEnabled: false });
+      const graphQLServer = createGraphQLServer(noCacheServerConfig);
       const result = await queryProject(graphQLServer);
 
       assertEquals(result, expectedResult);
@@ -427,7 +439,7 @@ describe("betterplace", () => {
     it("correctly extracts language from locale", async () => {
       fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-      const graphQLServer = createGraphQLServer({ cacheEnabled: false });
+      const graphQLServer = createGraphQLServer(noCacheServerConfig);
       const result = await queryProject(graphQLServer, {
         "accept-language": "de-DE",
       });
@@ -441,7 +453,7 @@ describe("betterplace", () => {
     it("uses correct language as default if requested language is not supported", async () => {
       fetchStub = stubFetchByUrlPrefix(validApiResponses);
 
-      const graphQLServer = createGraphQLServer({ cacheEnabled: false });
+      const graphQLServer = createGraphQLServer(noCacheServerConfig);
       const result = await queryProject(graphQLServer, {
         "accept-language": "es",
       });
