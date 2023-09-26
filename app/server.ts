@@ -153,8 +153,9 @@ export interface ServerConfig {
 
 const getLanguage = (languages = "") =>
   languages
-    .split(",")
-    .map((language) => language.split("-")[0])
+    .split(",") // languages are comma separated
+    .map((language) => language.split("-")[0]) // languages may include country code 'de-DE' e.g.
+    .map((language) => language.split(";")[0]) // languages may include a 'de;q=0.6' e.g.
     .find((language) => SUPPORTED_LANGUAGES.includes(language)) ||
   DEFAULT_LANGUAGE;
 
