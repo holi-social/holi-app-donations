@@ -34,6 +34,7 @@ import {
 } from "./betterplace_test_data.ts";
 import { Project, ProjectsResponse } from "./types.ts";
 import { createGraphQLServer, GraphQLServer } from "./server.ts";
+import { GraphQLError } from "./deps.ts";
 
 const emptyResponse = {
   total_entries: 0,
@@ -492,6 +493,20 @@ describe("betterplace", () => {
       );
 
       await assertRejects(() => fetchProject({ id: 123 }));
+    });
+
+    it("throws NOT_FOUND error for 404 response", async () => {
+      fetchStub = stub(
+        globalThis,
+        "fetch",
+        returnsNext([Promise.resolve({ status: 404 } as Response)]),
+      );
+
+      await assertRejects(
+        () => fetchProject({ id: 123 }),
+        GraphQLError,
+        "Not found",
+      );
     });
   });
 });

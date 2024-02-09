@@ -21,6 +21,7 @@ import {
   ApiProjectsResponse,
 } from "./api_types.ts";
 import { logger } from "./logging.ts";
+import { GraphQLError } from "./deps.ts";
 
 const BASE_URL = "https://api.betterplace.org";
 const PICTURE_TYPE_REGEX = /(.*)_(\d+)x(\d+)/;
@@ -290,7 +291,14 @@ export const fetchProject = (
   logger.info(`fetching project from ${url}`);
   const start = Date.now();
   return fetch(url)
-    .then((result) => result.json())
+    .then((response) => {
+      if (response.status === 404) {
+        throw new GraphQLError("Not found", {
+          extensions: { "code": "NOT_FOUND" },
+        });
+      }
+      return response.json();
+    })
     .then(transformProject)
     .then((result) => {
       const duration = Date.now() - start;
