@@ -424,6 +424,9 @@ describe("betterplace", () => {
       });
       const result2 = await queryProjects(graphQLServer);
       assertEquals(result2, expectedProjectsResponse);
+
+      // clean up cache timeout
+      await time.delay(1000);
     });
   });
 
