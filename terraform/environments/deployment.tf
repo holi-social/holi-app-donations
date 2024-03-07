@@ -54,7 +54,7 @@ resource "google_cloud_run_service" "donations_api" {
         }
         env {
           name  = "CACHE_TTL_MS_BETTERPLACE"
-          value = local.environment == "production" ? "3600000" : "60000"
+          value = local.environment == "production" ? "3600000" : "3600000"
           # 1 hour for production, otherwise 1 minute
         }
 
@@ -62,11 +62,11 @@ resource "google_cloud_run_service" "donations_api" {
           limits = {
             # cpu can only be scaled down to 1000m as long as container_concurrency is set to != 1
             cpu    = local.environment == "production" ? "1000m" : "1000m"
-            memory = local.environment == "production" ? "512Mi" : "256Mi"
+            memory = local.environment == "production" ? "512Mi" : "512Mi"
           }
           requests = {
-            cpu    = local.environment == "production" ? "1000m" : "10m"
-            memory = local.environment == "production" ? "512Mi" : "256Mi"
+            cpu    = local.environment == "production" ? "1000m" : "1000m"
+            memory = local.environment == "production" ? "512Mi" : "512Mi"
           }
         }
       }
