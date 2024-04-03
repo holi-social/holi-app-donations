@@ -138,26 +138,27 @@ const transformNews = (blogPost: ApiBlogPost): News => ({
   url: blogPost.links.find((p) => p.rel === "platform")!.href,
 });
 
-export const fetchCategories = (projectId: number): Promise<string[]> => {
+export const fetchCategories = async (projectId: number): Promise<string[]> => {
   // even though the original query might use a different locale, we are using "en" as locale deliberately
   // betterplace translates category slugs but we need stable identifiers, therefore we default to "en"
   const href =
     `https://api.betterplace.org/en/api_v4/projects/${projectId}/categories.json`;
   logger.info(`fetching project categories from ${href}`);
-  return fetch(href)
-    .then((result) => result.json())
-    .then((json) => json.data as Array<ApiProjectCategory>)
-    .then((categories) => categories.map(transformProjectCategory))
-    .catch((e) => {
-      logger.error(
-        `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
-        e,
-      );
-      return [];
-    });
+  try {
+    const response = await fetch(href);
+    const json = await response.json();
+    const categories = json.data as Array<ApiProjectCategory>;
+    return categories.map(transformProjectCategory);
+  } catch (e) {
+    logger.error(
+      `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
+      e,
+    );
+    return [];
+  }
 };
 
-export const fetchNews = (
+export const fetchNews = async (
   project: Project,
   parameters: NewsParameters,
 ): Promise<News[]> => {
@@ -165,38 +166,37 @@ export const fetchNews = (
     `?per_page=${parameters.limit || 5}&order=published_at:desc`;
   logger.info(`fetching blog posts from ${href}`);
 
-  return fetch(href)
-    .then((result) => result.json())
-    .then((json) => json.data as ApiBlogPost[])
-    .then((news) => news.map(transformNews))
-    .catch((e) => {
-      logger.error(
-        `Error while fetching blog posts from '${href}', using empty array to handle this (somewhat) gracefully`,
-        e,
-      );
-      return [];
-    });
+  try {
+    const response = await fetch(href);
+    const json = await response.json();
+    const news = json.data as ApiBlogPost[];
+    return news.map(transformNews);
+  } catch (e) {
+    logger.error(
+      `Error while fetching blog posts from '${href}', using empty array to handle this (somewhat) gracefully`,
+      e,
+    );
+    return [];
+  }
 };
 
-export const fetchInitiativeUrl = (
+export const fetchInitiativeUrl = async (
   initiative: Initiative,
 ): Promise<string | undefined> => {
   if (!initiative.url) {
     return Promise.resolve(initiative.url);
   }
-  return fetch(initiative.url)
-    .then((result) => result.json())
-    .then(
-      (organisation: ApiOrganisation) =>
-        organisation.links.find((l) => l.rel === "platform")?.href,
-    )
-    .catch((e) => {
-      logger.error(
-        `Error while fetching organisation url from '${initiative.url}', using api url to handle this (somewhat) gracefully`,
-        e,
-      );
-      return initiative.url;
-    });
+  try {
+    const response = await fetch(initiative.url);
+    const organisation: ApiOrganisation = await response.json();
+    return organisation.links.find((l) => l.rel === "platform")?.href;
+  } catch (e) {
+    logger.error(
+      `Error while fetching organisation url from '${initiative.url}', using api url to handle this (somewhat) gracefully`,
+      e,
+    );
+    return initiative.url;
+  }
 };
 
 function _debugP<In>(desc: string | undefined = undefined) {
@@ -228,35 +228,33 @@ const buildProjectsUrl = (
   return url;
 };
 
-const fetchPageOfProjects = (
+const fetchPageOfProjects = async (
   params: ProjectsParameters,
   language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
 ): Promise<ProjectsResponse> => {
   const url = buildProjectsUrl(params, language);
   const start = Date.now();
   logger.info(`fetching projects from ${url}`);
-  return fetch(url)
-    .then((result) => result.json())
-    .then(transformProjectsResponse)
-    .then((result) => {
-      const duration = Date.now() - start;
-      logger.debug(`fetching projects took ${duration} ms`);
-      return result;
-    })
-    .catch((e) => {
-      const duration = Date.now() - start;
-      logger.error(
-        `Error performing request to ${url} after ${duration} ms: ${e.message}`,
-      );
-      throw e;
-    });
+  try {
+    const fetchResponse = await fetch(url);
+    const jsonResponse = await fetchResponse.json();
+    return transformProjectsResponse(jsonResponse);
+  } catch (e) {
+    logger.error(
+      `Error performing request to ${url}: ${e.message}`,
+    );
+    throw e;
+  } finally {
+    const duration = Date.now() - start;
+    logger.debug(`fetching projects took ${duration} ms`);
+  }
 };
 
 // Do not select projects from too far back
 const randomPageForToday = () =>
   (new Date().setUTCHours(0, 0, 0, 0) / 100000) % MAX_PAGE_FOR_RANDOMIZATION;
 
-export const fetchProjects = (
+export const fetchProjects = async (
   { offset = 0, limit = DEFAULT_PAGE_SIZE, location }: ProjectsParameters,
   language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
 ): Promise<ProjectsResponse> => {
@@ -266,13 +264,14 @@ export const fetchProjects = (
   const isFirstPageOfUnfilteredList = offset < limit && !isFiltering;
   if (isFirstPageOfUnfilteredList) {
     logger.info(`fetching random projects from page ${randomPage}`);
-    return fetchPageOfProjects({
+    const projects = await fetchPageOfProjects({
       offset: randomPage * DEFAULT_PAGE_SIZE,
       limit: DEFAULT_PAGE_SIZE,
-    }, language).then((result) => ({
-      ...result,
-      data: result.data.slice(0, limit),
-    }));
+    }, language);
+    return ({
+      ...projects,
+      data: projects.data.slice(0, limit),
+    });
   }
   // After one randomly selected page, "normal" pagination starts with offset 0 and skips the random page that was already displayed
   const afterRandomPage = offset > randomPage * DEFAULT_PAGE_SIZE;
@@ -283,33 +282,29 @@ export const fetchProjects = (
   }, language);
 };
 
-export const fetchProject = (
+export const fetchProject = async (
   { id }: ProjectParameters,
   language: BetterPlaceLanguage = DEFAULT_LANGUAGE,
 ): Promise<Project> => {
   const url = `${BASE_URL}/${language}/api_v4/projects/${id}.json`;
   logger.info(`fetching project from ${url}`);
   const start = Date.now();
-  return fetch(url)
-    .then((response) => {
-      if (response.status === 404) {
-        throw new GraphQLError("Not found", {
-          extensions: { "code": "NOT_FOUND" },
-        });
-      }
-      return response.json();
-    })
-    .then(transformProject)
-    .then((result) => {
-      const duration = Date.now() - start;
-      logger.debug(`fetching project with ID ${id} took ${duration} ms`);
-      return result;
-    })
-    .catch((e) => {
-      const duration = Date.now() - start;
-      logger.error(
-        `Error performing request to ${url} after ${duration} ms: ${e.message}`,
-      );
-      throw e;
-    });
+  try {
+    const response = await fetch(url);
+    if (response.status === 404) {
+      throw new GraphQLError("Not found", {
+        extensions: { "code": "NOT_FOUND" },
+      });
+    }
+    const json = await response.json();
+    return transformProject(json);
+  } catch (e) {
+    logger.error(
+      `Error performing request to ${url}: ${e.message}`,
+    );
+    throw e;
+  } finally {
+    const duration = Date.now() - start;
+    logger.debug(`fetching project with ID ${id} took ${duration} ms`);
+  }
 };
