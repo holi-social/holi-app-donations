@@ -22,6 +22,7 @@ export const processGqlRequest = (
     headers: {
       "content-type": "application/json",
       "accept": "*/*",
+      ...headers,
     },
     body: JSON.stringify({
       operationName: null,
