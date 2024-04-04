@@ -117,16 +117,20 @@ const createResolvers = (_config: ServerConfig) => ({
     ): Promise<ProjectsResponse> =>
       _config.fake
         ? Promise.resolve({ totalResults: 0, data: [] })
-        : fetchProjects(parameters, context.language),
+        : fetchProjects(
+          parameters,
+          getLanguage(context?.request?.headers),
+        ),
     project: (
       // deno-lint-ignore no-explicit-any
       _parent: any,
       parameters: ProjectParameters,
       context: GraphQLContext,
     ): Promise<Project> =>
-      _config.fake
-        ? Promise.resolve(fakeProject)
-        : fetchProject(parameters, context.language),
+      _config.fake ? Promise.resolve(fakeProject) : fetchProject(
+        parameters,
+        getLanguage(context?.request?.headers),
+      ),
   },
   Project: {
     categories: (args: Project): Promise<string[]> =>
@@ -151,23 +155,23 @@ export interface ServerConfig {
   fake: boolean; // For local development. If set, the API returns dummy data
 }
 
-const getLanguage = (languages = "") =>
-  languages
+const getLanguage = (headers?: Headers) => {
+  const languages: string = headers?.get("accept-language") || DEFAULT_LANGUAGE;
+  return (languages
     .split(",") // languages are comma separated
     .map((language) => language.split("-")[0]) // languages may include country code 'de-DE' e.g.
     .map((language) => language.split(";")[0]) // languages may include a 'de;q=0.6' e.g.
+    .map((language) => language.trim())
     .find((language) => SUPPORTED_LANGUAGES.includes(language)) ||
-  DEFAULT_LANGUAGE;
+    DEFAULT_LANGUAGE) as BetterPlaceLanguage;
+};
 
 export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
   const plugins = config.cacheEnabled
     ? [
       useResponseCache({
         // global cache per language, shared by all users
-        session: (request: Request) =>
-          getLanguage(
-            request.headers.get("accept-language") || DEFAULT_LANGUAGE,
-          ),
+        session: (request: Request) => getLanguage(request.headers),
         ttlPerSchemaCoordinate: {
           "Query.projects": config.cacheTtlMsBetterplace,
           "Query.project": config.cacheTtlMsBetterplace,
@@ -180,14 +184,6 @@ export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
     schema: createSchema({ resolvers, typeDefs }),
     graphiql: true,
     plugins,
-    context: (context: GraphQLContext) => {
-      const headers = new Headers(context.params?.extensions?.headers);
-      const languages = headers.get("accept-language") || DEFAULT_LANGUAGE;
-      return {
-        ...context,
-        language: getLanguage(languages),
-      };
-    },
   });
 };
 
@@ -195,6 +191,7 @@ export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
 export type GraphQLServer = any;
 
 type GraphQLContext = {
+  request?: { headers: Headers };
   params?: {
     extensions?: {
       headers?: {
@@ -202,12 +199,11 @@ type GraphQLContext = {
       };
     };
   };
-  language: BetterPlaceLanguage;
 };
 
 export const startServer = (config: ServerConfig): Promise<void> => {
   const graphQLServer: GraphQLServer = createGraphQLServer(config);
-  return serve(graphQLServer.handleRequest, {
+  return serve(graphQLServer, {
     port: config.port,
     onListen({ port, hostname }) {
       logger.info(

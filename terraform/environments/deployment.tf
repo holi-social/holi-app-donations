@@ -54,7 +54,7 @@ resource "google_cloud_run_service" "donations_api" {
         }
         env {
           name  = "CACHE_TTL_MS_BETTERPLACE"
-          value = local.environment == "production" ? "3600000" : "60000"
+          value = local.environment == "production" ? "3600000" : "3600000"
           # 1 hour for production, otherwise 1 minute
         }
 
@@ -65,7 +65,7 @@ resource "google_cloud_run_service" "donations_api" {
             memory = local.environment == "production" ? "512Mi" : "256Mi"
           }
           requests = {
-            cpu    = local.environment == "production" ? "1000m" : "10m"
+            cpu    = local.environment == "production" ? "1000m" : "1000m"
             memory = local.environment == "production" ? "512Mi" : "256Mi"
           }
         }
