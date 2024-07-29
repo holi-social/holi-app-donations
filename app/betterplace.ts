@@ -29,6 +29,7 @@ export const SUPPORTED_LANGUAGES = ["en", "de"];
 export const DEFAULT_LANGUAGE: BetterPlaceLanguage = "en";
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_FOR_RANDOMIZATION = 10;
+const ERROR_CODE_NOT_FOUND = "NOT_FOUND";
 
 const cleanUpHtml = (html: string): string => {
   let result = "";
@@ -293,15 +294,17 @@ export const fetchProject = async (
     const response = await fetch(url);
     if (response.status === 404) {
       throw new GraphQLError("Not found", {
-        extensions: { "code": "NOT_FOUND" },
+        extensions: { "code": ERROR_CODE_NOT_FOUND },
       });
     }
     const json = await response.json();
     return transformProject(json);
   } catch (e) {
-    logger.error(
-      `Error performing request to ${url}: ${e.message}`,
-    );
+    if (e.extensions?.code !== ERROR_CODE_NOT_FOUND) {
+      logger.error(
+        `Error performing request to ${url}: ${e.message}`,
+      );
+    }
     throw e;
   } finally {
     const duration = Date.now() - start;
