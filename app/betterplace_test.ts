@@ -33,7 +33,7 @@ import {
   expectedResult,
 } from "./betterplace_test_data.ts";
 import { Project, ProjectsResponse } from "./types.ts";
-import { createGraphQLServer, GraphQLServer } from "./server.ts";
+import { createGraphQLServer, GraphQLServer, ServerConfig } from "./server.ts";
 import { GraphQLError } from "./deps.ts";
 
 const emptyResponse = {
@@ -47,11 +47,21 @@ type UrlPrefix = string;
 const projectsUrlWithDefaultOptions =
   "https://api.betterplace.org/de/api_v4/projects.json?facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC";
 
-const noCacheServerConfig = {
+const dummyDonationsDBConfig = {
+  hostname: "dummy",
+  port: "1234",
+  database: "dummy",
+  username: "dummy",
+  password: "dummy",
+  connectionAttempts: 10,
+};
+
+const noCacheServerConfig: ServerConfig = {
   cacheEnabled: false,
   port: 0,
   cacheTtlMsBetterplace: 0,
   fake: false,
+  donationsDB: dummyDonationsDBConfig,
 };
 
 const stubFetchByUrlPrefix = (
@@ -412,6 +422,7 @@ describe("betterplace", () => {
         port: 0,
         cacheTtlMsBetterplace: 1000,
         fake: false,
+        donationsDB: dummyDonationsDBConfig,
       });
       const result = await queryProjects(graphQLServer);
       assertEquals(result, expectedProjectsResponse);
