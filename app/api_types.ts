@@ -18,24 +18,24 @@ export type ApiCarrier = {
   picture: ApiPicture;
 };
 
-/** only covers the parts of the API response type that were using */
+/** only covers the parts of the API response type that we're using */
 export type ApiProject = {
-  id: ApiProjectId;
+  id: ApiProjectId | string;
   title: string;
   city: string | undefined | null;
   country: string | undefined | null;
   links: Array<ApiLink>;
   carrier: ApiCarrier;
-  donations_count: number;
-  progress_percentage: number;
-  open_amount_in_cents: number;
+  donations_count: number | string;
+  progress_percentage: number | string;
+  open_amount_in_cents: number | string;
   profile_picture: ApiPicture | undefined;
   summary: string | undefined | null;
   description: string | undefined | null;
-  blog_post_count: number;
+  blog_post_count: number | string;
 };
 
-/** only covers the parts of the API response type that were using */
+/** only covers the parts of the API response type that we're using */
 export type ApiProjectsResponse = {
   total_entries: number;
   offset: number;

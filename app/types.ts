@@ -1,6 +1,13 @@
 export interface ProjectsParameters {
-  limit?: number;
   offset?: number;
+  limit?: number;
+  location?: string;
+}
+
+export interface RecommendationsParameters {
+  offset?: number;
+  limit?: number;
+  topics: string[];
   location?: string;
 }
 

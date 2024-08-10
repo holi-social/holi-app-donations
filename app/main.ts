@@ -3,8 +3,10 @@ import {
   DEFAULT_CACHE_ENABLED,
   DEFAULT_CACHE_TTL_MS_BETTERPLACE,
   DEFAULT_PORT,
+  ServerConfig,
   startServer,
 } from "./server.ts";
+import { DEFAULT_DB_CONNECTION_ATTEMPTS } from "./donations_db.ts";
 
 const environment = Deno.env.get("ENVIRONMENT") || "development";
 
@@ -28,7 +30,8 @@ const requiredEnv = <T>(
 
 const asBoolean = (str: string) => /^true$/i.test(str);
 
-const serverConfigFromEnv = () => {
+const fake = requiredEnv("FAKE", asBoolean, false); // For local development. If set, the API returns dummy data
+const serverConfigFromEnv = (): ServerConfig => {
   return {
     port: requiredEnv("PORT", Number, DEFAULT_PORT),
     cacheEnabled: requiredEnv(
@@ -41,7 +44,35 @@ const serverConfigFromEnv = () => {
       Number,
       DEFAULT_CACHE_TTL_MS_BETTERPLACE,
     ),
-    fake: requiredEnv("FAKE", asBoolean, false), // For local development. If set, the API returns dummy data
+    donationsDB: {
+      hostname: requiredEnv(
+        "DB_HOST",
+        String,
+        fake ? "dummy value" : undefined,
+      ),
+      port: requiredEnv("DB_PORT", String, fake ? "31337" : undefined),
+      database: requiredEnv(
+        "DB_NAME",
+        String,
+        fake ? "dummy value" : undefined,
+      ),
+      username: requiredEnv(
+        "DB_USERNAME",
+        String,
+        fake ? "dummy value" : undefined,
+      ),
+      password: requiredEnv(
+        "DB_PASSWORD",
+        String,
+        fake ? "dummy value" : undefined,
+      ),
+      connectionAttempts: requiredEnv(
+        "DB_CONNECTION_ATTEMPTS",
+        Number,
+        DEFAULT_DB_CONNECTION_ATTEMPTS,
+      ),
+    },
+    fake,
   };
 };
 

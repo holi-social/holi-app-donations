@@ -7,18 +7,19 @@ import {
   ProjectParameters,
   ProjectsParameters,
   ProjectsResponse,
+  RecommendationsParameters,
 } from "./types.ts";
 import {
-  DEFAULT_LANGUAGE,
   fetchCategories,
   fetchInitiativeUrl,
   fetchNews,
   fetchProject,
   fetchProjects,
-  SUPPORTED_LANGUAGES,
 } from "./betterplace.ts";
 import { createSchema, createYoga, serve, useResponseCache } from "./deps.ts";
 import { logger } from "./logging.ts";
+import { DonationsDB, DonationsDBConfig } from "./donations_db.ts";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./constants.ts";
 
 const typeDefs = `
     type Picture {
@@ -74,11 +75,14 @@ const typeDefs = `
         totalResults: Int!
         data: [Project]!
     }
+    
+    scalar GeoJSON
 
     type Query {
         # uses offset-based pagination as described in https://www.apollographql.com/docs/react/pagination/offset-based
         projects(offset: Int = 0, limit: Int = 10, location: String): ProjectsResponse!
         project(id: Int!): Project!
+        recommendations(offset: Int = 0, limit: Int = 10, topics: [String!], location: GeoJSON): ProjectsResponse!
     }
 `;
 
@@ -107,7 +111,7 @@ const fakeProject: Project = {
   newsCount: 0,
 };
 
-const createResolvers = (_config: ServerConfig) => ({
+const createResolvers = (_config: ServerConfig, donationsDB: DonationsDB) => ({
   Query: {
     projects: (
       // deno-lint-ignore no-explicit-any
@@ -131,6 +135,18 @@ const createResolvers = (_config: ServerConfig) => ({
         parameters,
         getLanguage(context?.request?.headers),
       ),
+    recommendations: (
+      // deno-lint-ignore no-explicit-any
+      _parent: any,
+      parameters: RecommendationsParameters,
+      context: GraphQLContext,
+    ): Promise<ProjectsResponse> =>
+      _config.fake
+        ? Promise.resolve({ totalResults: 0, data: [] })
+        : donationsDB.findRecommendations(
+          parameters,
+          getLanguage(context?.request?.headers),
+        ),
   },
   Project: {
     categories: (args: Project): Promise<string[]> =>
@@ -153,6 +169,7 @@ export interface ServerConfig {
   cacheEnabled: boolean; // default: true
   cacheTtlMsBetterplace: number; // default: 60 seconds
   fake: boolean; // For local development. If set, the API returns dummy data
+  donationsDB: DonationsDBConfig;
 }
 
 const getLanguage = (headers?: Headers) => {
@@ -179,7 +196,8 @@ export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
       }),
     ]
     : [];
-  const resolvers = createResolvers(config);
+  const donationsDB = new DonationsDB(config.donationsDB);
+  const resolvers = createResolvers(config, donationsDB);
   return createYoga({
     schema: createSchema({ resolvers, typeDefs }),
     graphiql: true,

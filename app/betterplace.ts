@@ -1,10 +1,9 @@
-import { Parser } from "./deps.ts";
+import { GraphQLError } from "./deps.ts";
 import {
   BetterPlaceLanguage,
   Initiative,
   News,
   NewsParameters,
-  Picture,
   Project,
   ProjectParameters,
   ProjectsParameters,
@@ -12,132 +11,21 @@ import {
 } from "./types.ts";
 import {
   ApiBlogPost,
-  ApiCarrier,
-  ApiLink,
   ApiOrganisation,
-  ApiPicture,
-  ApiProject,
   ApiProjectCategory,
-  ApiProjectsResponse,
 } from "./api_types.ts";
 import { logger } from "./logging.ts";
-import { GraphQLError } from "./deps.ts";
+import {
+  transformNews,
+  transformProject,
+  transformProjectCategory,
+  transformProjectsResponse,
+} from "./transformers.ts";
+import { DEFAULT_LANGUAGE, DEFAULT_PAGE_SIZE } from "./constants.ts";
 
 const BASE_URL = "https://api.betterplace.org";
-const PICTURE_TYPE_REGEX = /(.*)_(\d+)x(\d+)/;
-export const SUPPORTED_LANGUAGES = ["en", "de"];
-export const DEFAULT_LANGUAGE: BetterPlaceLanguage = "en";
-const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_FOR_RANDOMIZATION = 10;
 const ERROR_CODE_NOT_FOUND = "NOT_FOUND";
-
-const cleanUpHtml = (html: string): string => {
-  let result = "";
-  const parser = new Parser({
-    onopentag: (name) => {
-      if (name === "br") {
-        result += "\n";
-      }
-    },
-    ontext: (text) => {
-      result += text;
-    },
-  });
-  parser.end(html);
-  return result;
-};
-
-const transformPicture = (picture: ApiPicture | undefined): Picture[] => {
-  if (!picture) {
-    return [];
-  }
-  return picture.links.map((link: ApiLink) => {
-    try {
-      const matches = PICTURE_TYPE_REGEX.exec(link.rel);
-      if (matches?.length !== 4) {
-        return {
-          type: link.rel,
-          url: link.href,
-        };
-      }
-      return {
-        type: matches[1],
-        url: link.href,
-        width: parseInt(matches[2], 10),
-        height: parseInt(matches[3], 10),
-      };
-    } catch {
-      return {
-        type: link.rel,
-        url: link.href,
-      };
-    }
-  });
-};
-
-const transformCarrier = (carrier: ApiCarrier): Initiative => {
-  return {
-    id: carrier.id,
-    name: carrier.name,
-    city: carrier.city,
-    country: carrier.country,
-    url: carrier.links.find((l) => l.rel === "self")?.href, // will be replaced by separate resolver resp. used as fallback
-    picture: transformPicture(carrier.picture),
-  };
-};
-
-const transformProject = (project: ApiProject): Project => {
-  return {
-    id: project.id,
-    title: project.title,
-    city: project.city,
-    country: project.country,
-    categories: [], // will be set by separate resolver
-    initiative: transformCarrier(project.carrier),
-    donationsCount: project.donations_count,
-    progressPercentage: project.progress_percentage,
-    openAmountInCents: project.open_amount_in_cents,
-    picture: transformPicture(project.profile_picture),
-    summary: project.summary,
-    description: project.description && cleanUpHtml(project.description),
-    donationUrl: project.links.find((p) => p.rel === "new_donation")!.href,
-    newsUrl: project.links.find((p) => p.rel === "blog_posts")!.href,
-    news: [], // will be set by separate resolver
-    newsCount: project.blog_post_count,
-  };
-};
-
-const transformProjectsResponse = (
-  response: ApiProjectsResponse,
-): ProjectsResponse => {
-  if (!response.data) {
-    throw new Error(`Invalid response: ${JSON.stringify(response)}`);
-  }
-  return {
-    totalResults: response.total_entries,
-    data: response.data.map(transformProject),
-  };
-};
-
-// TODO consider returning an object consisting of at least id + slug so that original category URL can be reconstructed
-//  which could be needed in later stories in which we fetch projects of a given category
-const transformProjectCategory = (
-  apiProjectCategory: ApiProjectCategory,
-): string => apiProjectCategory.slug;
-
-const transformNews = (blogPost: ApiBlogPost): News => ({
-  id: blogPost.id,
-  title: blogPost.title,
-  publishDate: blogPost.published_at,
-  author: blogPost.author
-    ? {
-      name: blogPost.author.name,
-      picture: transformPicture(blogPost.author.picture),
-    }
-    : undefined,
-  body: cleanUpHtml(blogPost.body),
-  url: blogPost.links.find((p) => p.rel === "platform")!.href,
-});
 
 export const fetchCategories = async (projectId: number): Promise<string[]> => {
   // even though the original query might use a different locale, we are using "en" as locale deliberately
