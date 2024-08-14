@@ -4,7 +4,8 @@
     "specifiers": {
       "npm:@graphql-yoga/plugin-response-cache@3.8.4-alpha-20240804141352-8c191869": "npm:@graphql-yoga/plugin-response-cache@3.8.4-alpha-20240804141352-8c191869_graphql@15.9.0_graphql-yoga@5.6.4-alpha-20240804141352-8c191869__graphql@15.9.0",
       "npm:graphql-yoga@5.6.4-alpha-20240804141352-8c191869": "npm:graphql-yoga@5.6.4-alpha-20240804141352-8c191869_graphql@15.9.0",
-      "npm:graphql@15.9.0": "npm:graphql@15.9.0"
+      "npm:graphql@15.9.0": "npm:graphql@15.9.0",
+      "npm:graphql@16.9.0": "npm:graphql@16.9.0"
     },
     "npm": {
       "@envelop/core@5.0.1": {
@@ -214,6 +215,10 @@
       },
       "graphql@15.9.0": {
         "integrity": "sha512-GCOQdvm7XxV1S4U4CGrsdlEN37245eC8P9zaYCMr6K1BG0IPGy5lUwmJsEOGyl1GD6HXjOtl2keCP9asRBwNvA==",
+        "dependencies": {}
+      },
+      "graphql@16.9.0": {
+        "integrity": "sha512-GGTKBX4SD7Wdb8mqeDLni2oaRGYQWjWHGKPQ24ZMnUtKfcsVoiv4uX8+LJr1K6U5VW2Lu1BwJnj7uiori0YtRw==",
         "dependencies": {}
       },
       "lru-cache@10.4.3": {

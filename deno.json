@@ -13,7 +13,7 @@
       "docker": "docker build -t donations-api . && docker run -it --init -p 8001:8001 donations-api",
       "coverage": "deno test --coverage=coverage && deno coverage coverage",
       "pre-commit": {
-        "cmd": "vr lint && vr fmt:check",
+        "cmd": "vr lint && vr fmt:check && vr testv",
         "gitHook": "pre-commit"
       }
     }
