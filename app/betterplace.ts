@@ -151,7 +151,7 @@ export const fetchCategories = async (projectId: number): Promise<string[]> => {
     const categories = json.data as Array<ApiProjectCategory>;
     return categories.map(transformProjectCategory);
   } catch (e) {
-    logger.error(
+    logger.warn(
       `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
       e,
     );
@@ -173,7 +173,7 @@ export const fetchNews = async (
     const news = json.data as ApiBlogPost[];
     return news.map(transformNews);
   } catch (e) {
-    logger.error(
+    logger.warn(
       `Error while fetching blog posts from '${href}', using empty array to handle this (somewhat) gracefully`,
       e,
     );
@@ -192,7 +192,7 @@ export const fetchInitiativeUrl = async (
     const organisation: ApiOrganisation = await response.json();
     return organisation.links.find((l) => l.rel === "platform")?.href;
   } catch (e) {
-    logger.error(
+    logger.warn(
       `Error while fetching organisation url from '${initiative.url}', using api url to handle this (somewhat) gracefully`,
       e,
     );
