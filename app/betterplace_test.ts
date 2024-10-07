@@ -11,13 +11,9 @@ import {
   returnsNext,
   Stub,
   stub,
-} from "./dev_deps.ts";
-import {
-  processGqlRequest,
-  ResponsePayload,
-  stubFetch,
-} from "./common_test.ts";
-import { fetchProject, fetchProjects } from "./betterplace.ts";
+} from './dev_deps.ts'
+import { processGqlRequest, ResponsePayload, stubFetch } from './common_test.ts'
+import { fetchProject, fetchProjects } from './betterplace.ts'
 import {
   apiBlogPosts1,
   apiBlogPosts2,
@@ -31,71 +27,69 @@ import {
   categoryPopular,
   expectedProjectsResponse,
   expectedResult,
-} from "./betterplace_test_data.ts";
-import { Project, ProjectsResponse } from "./types.ts";
-import { createGraphQLServer, GraphQLServer } from "./server.ts";
-import { GraphQLError } from "./deps.ts";
+} from './betterplace_test_data.ts'
+import { Project, ProjectsResponse } from './types.ts'
+import { createGraphQLServer, GraphQLServer } from './server.ts'
+import { GraphQLError } from './deps.ts'
 
 const emptyResponse = {
   total_entries: 0,
   offset: 0,
   data: [],
-};
+}
 
-type UrlPrefix = string;
+type UrlPrefix = string
 
 const projectsUrlWithDefaultOptions =
-  "https://api.betterplace.org/de/api_v4/projects.json?facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC";
+  'https://api.betterplace.org/de/api_v4/projects.json?facets=completed%3Afalse%7Cclosed%3Afalse%7Cprohibit_donations%3Afalse&order=rank%3ADESC'
 
 const noCacheServerConfig = {
   cacheEnabled: false,
   port: 0,
   cacheTtlMsBetterplace: 0,
   fake: false,
-};
+}
 
 const stubFetchByUrlPrefix = (
   responses: Record<UrlPrefix, ResponsePayload>,
 ) => {
-  return stub(globalThis, "fetch", (input) => {
-    const url = input.toString();
+  return stub(globalThis, 'fetch', (input) => {
+    const url = input.toString()
     for (const [urlPrefix, response] of Object.entries(responses)) {
       if (url.startsWith(urlPrefix)) {
         if (response instanceof Error) {
-          return Promise.reject(response);
+          return Promise.reject(response)
         } else {
-          return Promise.resolve(new Response(JSON.stringify(response)));
+          return Promise.resolve(new Response(JSON.stringify(response)))
         }
       }
     }
-    throw Promise.reject(new Error(`Unexpected request URL "${url}"`));
-  });
-};
+    throw Promise.reject(new Error(`Unexpected request URL "${url}"`))
+  })
+}
 
 const validApiResponses = {
-  "https://api.betterplace.org/en/api_v4/projects.json": apiProjectsResult,
-  "https://api.betterplace.org/en/api_v4/projects/1.json": apiProject1,
-  "https://api.betterplace.org/de/api_v4/projects/1.json": apiProject1,
-  "https://api.betterplace.org/en/api_v4/projects/1/categories.json":
-    categoriesResult([categoryEducation]),
-  "https://api.betterplace.org/en/api_v4/projects/2/categories.json":
-    categoriesResult([categoryPopular]),
-  "https://api.betterplace.org/en/api_v4/projects/3/categories.json":
-    categoriesResult([categoryEducation, categoryPopular]),
-  "https://api.betterplace.org/en/api_v4/projects/4/categories.json":
-    categoriesResult([categoryEducation, categoryPopular]),
-  "https://api.betterplace.org/de/api_v4/organisations/1.json":
-    apiOrganisation1,
-  "https://api.betterplace.org/de/api_v4/organisations/2.json":
-    apiOrganisation2,
-  "https://api.betterplace.org/de/api_v4/organisations/3.json":
-    apiOrganisation2,
-  "https://api.betterplace.org/de/api_v4/organisations/4.json":
-    apiOrganisation2,
-  "https://api.betterplace.org/de/api_v4/blog_posts/1.json": apiBlogPosts1,
-  "https://api.betterplace.org/de/api_v4/blog_posts/2.json": apiBlogPosts2,
-  "https://api.betterplace.org/de/api_v4/blog_posts/": apiBlogPostsEmpty,
-};
+  'https://api.betterplace.org/en/api_v4/projects.json': apiProjectsResult,
+  'https://api.betterplace.org/en/api_v4/projects/1.json': apiProject1,
+  'https://api.betterplace.org/de/api_v4/projects/1.json': apiProject1,
+  'https://api.betterplace.org/en/api_v4/projects/1/categories.json': categoriesResult([categoryEducation]),
+  'https://api.betterplace.org/en/api_v4/projects/2/categories.json': categoriesResult([categoryPopular]),
+  'https://api.betterplace.org/en/api_v4/projects/3/categories.json': categoriesResult([
+    categoryEducation,
+    categoryPopular,
+  ]),
+  'https://api.betterplace.org/en/api_v4/projects/4/categories.json': categoriesResult([
+    categoryEducation,
+    categoryPopular,
+  ]),
+  'https://api.betterplace.org/de/api_v4/organisations/1.json': apiOrganisation1,
+  'https://api.betterplace.org/de/api_v4/organisations/2.json': apiOrganisation2,
+  'https://api.betterplace.org/de/api_v4/organisations/3.json': apiOrganisation2,
+  'https://api.betterplace.org/de/api_v4/organisations/4.json': apiOrganisation2,
+  'https://api.betterplace.org/de/api_v4/blog_posts/1.json': apiBlogPosts1,
+  'https://api.betterplace.org/de/api_v4/blog_posts/2.json': apiBlogPosts2,
+  'https://api.betterplace.org/de/api_v4/blog_posts/': apiBlogPostsEmpty,
+}
 
 const projectFragment = `
   id
@@ -146,7 +140,7 @@ const projectFragment = `
   }
   newsUrl
   newsCount
-`;
+`
 
 const queryProjects = (
   graphQLServer: GraphQLServer,
@@ -160,11 +154,11 @@ const queryProjects = (
         ${projectFragment}
       }
     }
-  }`;
+  }`
   return processGqlRequest(graphQLServer, query).then(
     (result) => result?.projects as ProjectsResponse,
-  );
-};
+  )
+}
 
 const queryProject = async (
   graphQLServer: GraphQLServer,
@@ -180,336 +174,327 @@ const queryProject = async (
     }`,
     { id: apiProject1.id },
     headers,
-  );
+  )
 
-  return (await promise)?.project as Project;
-};
+  return (await promise)?.project as Project
+}
 
 const urlForPage = (page = 1, pageSize = 10) =>
-  new URL(`${projectsUrlWithDefaultOptions}&page=${page}&per_page=${pageSize}`);
+  new URL(`${projectsUrlWithDefaultOptions}&page=${page}&per_page=${pageSize}`)
 
-describe("betterplace", () => {
-  let fetchStub: Stub;
-  let time: FakeTime;
+describe('betterplace', () => {
+  let fetchStub: Stub
+  let time: FakeTime
 
   beforeEach(() => {
-    time = new FakeTime(new Date(2023, 8, 12, 12));
-  });
+    time = new FakeTime(new Date(2023, 8, 12, 12))
+  })
 
   afterEach(() => {
-    fetchStub?.restore();
-    time?.restore();
-  });
+    fetchStub?.restore()
+    time?.restore()
+  })
 
-  describe("fetching project list", () => {
-    it("calls api with correct parameters", async () => {
-      fetchStub = stubFetch(emptyResponse);
+  describe('fetching project list', () => {
+    it('calls api with correct parameters', async () => {
+      fetchStub = stubFetch(emptyResponse)
 
-      await fetchProjects({ limit: 10, offset: 30 }, "de");
+      await fetchProjects({ limit: 10, offset: 30 }, 'de')
 
-      const expectedUrl = urlForPage(3);
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+      const expectedUrl = urlForPage(3)
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("calls api with correct parameters for location search", async () => {
-      fetchStub = stubFetch(emptyResponse);
+    it('calls api with correct parameters for location search', async () => {
+      fetchStub = stubFetch(emptyResponse)
 
-      await fetchProjects({ limit: 10, offset: 20, location: "Hamburg" }, "de");
+      await fetchProjects({ limit: 10, offset: 20, location: 'Hamburg' }, 'de')
 
       const expectedUrl = new URL(
         projectsUrlWithDefaultOptions +
-          "&page=3&per_page=10&scope=location&q=Hamburg",
-      );
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+          '&page=3&per_page=10&scope=location&q=Hamburg',
+      )
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("properly encodes query for location search", async () => {
-      fetchStub = stubFetch(emptyResponse);
+    it('properly encodes query for location search', async () => {
+      fetchStub = stubFetch(emptyResponse)
 
       await fetchProjects(
         {
           limit: 10,
           offset: 20,
-          location: "Straße 123, 20535 Hamburg",
+          location: 'Straße 123, 20535 Hamburg',
         },
-        "de",
-      );
+        'de',
+      )
 
       const expectedUrl = new URL(
         projectsUrlWithDefaultOptions +
-          "&page=3&per_page=10&scope=location&q=Stra%C3%9Fe+123%2C+20535+Hamburg",
-      );
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+          '&page=3&per_page=10&scope=location&q=Stra%C3%9Fe+123%2C+20535+Hamburg',
+      )
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("calls api with correct parameters for empty location search", async () => {
-      fetchStub = stubFetch(emptyResponse);
+    it('calls api with correct parameters for empty location search', async () => {
+      fetchStub = stubFetch(emptyResponse)
 
-      await fetchProjects({ limit: 10, offset: 30, location: "" }, "de");
+      await fetchProjects({ limit: 10, offset: 30, location: '' }, 'de')
 
-      const expectedUrl = urlForPage(3);
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+      const expectedUrl = urlForPage(3)
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("queries a random page for the first unfiltered page", async () => {
-      fetchStub = stubFetch(emptyResponse);
+    it('queries a random page for the first unfiltered page', async () => {
+      fetchStub = stubFetch(emptyResponse)
 
-      await fetchProjects({}, "de");
+      await fetchProjects({}, 'de')
 
-      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] });
-    });
+      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] })
+    })
 
-    it("queries a different random page the next day", async () => {
-      time.tick(24 * 60 * 60 * 1000);
-      fetchStub = stubFetch(emptyResponse);
+    it('queries a different random page the next day', async () => {
+      time.tick(24 * 60 * 60 * 1000)
+      fetchStub = stubFetch(emptyResponse)
 
-      await fetchProjects({}, "de");
+      await fetchProjects({}, 'de')
 
-      assertSpyCall(fetchStub, 0, { args: [urlForPage(3)] });
-    });
+      assertSpyCall(fetchStub, 0, { args: [urlForPage(3)] })
+    })
 
-    it("resumes normal pagination after the first page", async () => {
+    it('resumes normal pagination after the first page', async () => {
       fetchStub = stub(
         globalThis,
-        "fetch",
+        'fetch',
         returnsNext(
-          Array(3).fill(emptyResponse).map((response) =>
-            Promise.resolve(new Response(JSON.stringify(response)))
-          ),
+          Array(3).fill(emptyResponse).map((response) => Promise.resolve(new Response(JSON.stringify(response)))),
         ),
-      );
+      )
 
-      await fetchProjects({}, "de");
-      await fetchProjects({ offset: 10 }, "de");
-      await fetchProjects({ offset: 20 }, "de");
+      await fetchProjects({}, 'de')
+      await fetchProjects({ offset: 10 }, 'de')
+      await fetchProjects({ offset: 20 }, 'de')
 
-      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] });
-      assertSpyCall(fetchStub, 1, { args: [urlForPage(1)] });
-      assertSpyCall(fetchStub, 2, { args: [urlForPage(2)] });
-    });
+      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] })
+      assertSpyCall(fetchStub, 1, { args: [urlForPage(1)] })
+      assertSpyCall(fetchStub, 2, { args: [urlForPage(2)] })
+    })
 
-    it("skips the randomly selected page in normal pagination", async () => {
+    it('skips the randomly selected page in normal pagination', async () => {
       fetchStub = stub(
         globalThis,
-        "fetch",
+        'fetch',
         returnsNext(
-          Array(3).fill(emptyResponse).map((response) =>
-            Promise.resolve(new Response(JSON.stringify(response)))
-          ),
+          Array(3).fill(emptyResponse).map((response) => Promise.resolve(new Response(JSON.stringify(response)))),
         ),
-      );
+      )
 
-      await fetchProjects({}, "de");
-      await fetchProjects({ offset: 80 }, "de");
-      await fetchProjects({ offset: 90 }, "de");
+      await fetchProjects({}, 'de')
+      await fetchProjects({ offset: 80 }, 'de')
+      await fetchProjects({ offset: 90 }, 'de')
 
-      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] });
-      assertSpyCall(fetchStub, 1, { args: [urlForPage(8)] });
-      assertSpyCall(fetchStub, 2, { args: [urlForPage(10)] });
-    });
+      assertSpyCall(fetchStub, 0, { args: [urlForPage(9)] })
+      assertSpyCall(fetchStub, 1, { args: [urlForPage(8)] })
+      assertSpyCall(fetchStub, 2, { args: [urlForPage(10)] })
+    })
 
-    it("does not query random projects for the first page when filtering for location", async () => {
-      fetchStub = stubFetch(emptyResponse);
+    it('does not query random projects for the first page when filtering for location', async () => {
+      fetchStub = stubFetch(emptyResponse)
 
-      await fetchProjects({ limit: 10, offset: 0, location: "Hamburg" }, "de");
+      await fetchProjects({ limit: 10, offset: 0, location: 'Hamburg' }, 'de')
 
       const expectedUrl = new URL(
         projectsUrlWithDefaultOptions +
-          "&page=1&per_page=10&scope=location&q=Hamburg",
-      );
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+          '&page=1&per_page=10&scope=location&q=Hamburg',
+      )
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("correctly parses empty response", async () => {
-      fetchStub = stubFetch(emptyResponse);
+    it('correctly parses empty response', async () => {
+      fetchStub = stubFetch(emptyResponse)
 
-      const result = await fetchProjects({ offset: 10 });
+      const result = await fetchProjects({ offset: 10 })
 
-      assertEquals(result, { totalResults: 0, data: [] });
-    });
+      assertEquals(result, { totalResults: 0, data: [] })
+    })
 
-    it("correctly parses project list", async () => {
-      fetchStub = stubFetchByUrlPrefix(validApiResponses);
+    it('correctly parses project list', async () => {
+      fetchStub = stubFetchByUrlPrefix(validApiResponses)
 
-      const graphQLServer = createGraphQLServer(noCacheServerConfig);
-      const result = await queryProjects(graphQLServer);
+      const graphQLServer = createGraphQLServer(noCacheServerConfig)
+      const result = await queryProjects(graphQLServer)
 
-      assertEquals(result, expectedProjectsResponse);
-    });
+      assertEquals(result, expectedProjectsResponse)
+    })
 
-    it("throws error for invalid projects response", async () => {
+    it('throws error for invalid projects response', async () => {
       fetchStub = stub(
         globalThis,
-        "fetch",
-        returnsNext([Promise.resolve(new Response("foobar"))]),
-      );
+        'fetch',
+        returnsNext([Promise.resolve(new Response('foobar'))]),
+      )
 
-      await assertRejects(() => fetchProjects({ offset: 10 }));
-    });
+      await assertRejects(() => fetchProjects({ offset: 10 }))
+    })
 
-    it("throws error for API error response", async () => {
+    it('throws error for API error response', async () => {
       fetchStub = stubFetch({
-        status: "internal_server_error",
-        "status_code": 500,
-      });
+        status: 'internal_server_error',
+        'status_code': 500,
+      })
 
-      await assertRejects(() => fetchProjects({ offset: 10 }));
-    });
+      await assertRejects(() => fetchProjects({ offset: 10 }))
+    })
 
-    it("returns empty categories for invalid category responses", async () => {
+    it('returns empty categories for invalid category responses', async () => {
       fetchStub = stubFetchByUrlPrefix({
         ...validApiResponses,
-        "https://api.betterplace.org/en/api_v4/projects/1/categories.json":
-          new Error("Expected error"),
-      });
+        'https://api.betterplace.org/en/api_v4/projects/1/categories.json': new Error('Expected error'),
+      })
 
-      const graphQLServer = createGraphQLServer(noCacheServerConfig);
-      const result = await queryProjects(graphQLServer);
+      const graphQLServer = createGraphQLServer(noCacheServerConfig)
+      const result = await queryProjects(graphQLServer)
 
-      const project1 = result.data.find((p) => p.id === 1);
-      assertExists(project1);
-      assertEquals(project1?.categories, []);
-    });
+      const project1 = result.data.find((p) => p.id === 1)
+      assertExists(project1)
+      assertEquals(project1?.categories, [])
+    })
 
-    it("returns api url for invalid organisation responses", async () => {
+    it('returns api url for invalid organisation responses', async () => {
       fetchStub = stubFetchByUrlPrefix({
         ...validApiResponses,
-        "https://api.betterplace.org/de/api_v4/organisations/1.json": new Error(
-          "Expected error",
+        'https://api.betterplace.org/de/api_v4/organisations/1.json': new Error(
+          'Expected error',
         ),
-      });
+      })
 
-      const graphQLServer = createGraphQLServer(noCacheServerConfig);
-      const result = await queryProjects(graphQLServer);
+      const graphQLServer = createGraphQLServer(noCacheServerConfig)
+      const result = await queryProjects(graphQLServer)
 
-      const project1 = result.data.find((p) => p.id === 1);
-      assertExists(project1?.initiative);
+      const project1 = result.data.find((p) => p.id === 1)
+      assertExists(project1?.initiative)
       assertEquals(
         project1?.initiative.url,
-        "https://api.betterplace.org/de/api_v4/organisations/1.json",
-      );
-    });
+        'https://api.betterplace.org/de/api_v4/organisations/1.json',
+      )
+    })
 
-    it("returns empty news for invalid blog post responses", async () => {
+    it('returns empty news for invalid blog post responses', async () => {
       fetchStub = stubFetchByUrlPrefix({
         ...validApiResponses,
-        "https://api.betterplace.org/de/api_v4/blog_posts/1.json": new Error(
-          "Expected error",
+        'https://api.betterplace.org/de/api_v4/blog_posts/1.json': new Error(
+          'Expected error',
         ),
-      });
+      })
 
-      const graphQLServer = createGraphQLServer(noCacheServerConfig);
-      const result = await queryProjects(graphQLServer);
-      const project1 = result.data.find((p) => p.id === 1);
-      assertExists(project1);
-      assertEquals(project1?.news, []);
-    });
+      const graphQLServer = createGraphQLServer(noCacheServerConfig)
+      const result = await queryProjects(graphQLServer)
+      const project1 = result.data.find((p) => p.id === 1)
+      assertExists(project1)
+      assertEquals(project1?.news, [])
+    })
 
-    it("returns cached results on recurring requests", async () => {
-      fetchStub = stubFetchByUrlPrefix(validApiResponses);
+    it('returns cached results on recurring requests', async () => {
+      fetchStub = stubFetchByUrlPrefix(validApiResponses)
       const graphQLServer = createGraphQLServer({
         cacheEnabled: true,
         port: 0,
         cacheTtlMsBetterplace: 1000,
         fake: false,
-      });
-      const result = await queryProjects(graphQLServer);
-      assertEquals(result, expectedProjectsResponse);
+      })
+      const result = await queryProjects(graphQLServer)
+      assertEquals(result, expectedProjectsResponse)
 
-      fetchStub?.restore();
+      fetchStub?.restore()
       fetchStub = stubFetchByUrlPrefix({
-        "https://api.betterplace.org/en/api_v4/projects.json": new Error(
-          "Expected error",
+        'https://api.betterplace.org/en/api_v4/projects.json': new Error(
+          'Expected error',
         ),
-      });
-      const result2 = await queryProjects(graphQLServer);
-      assertEquals(result2, expectedProjectsResponse);
+      })
+      const result2 = await queryProjects(graphQLServer)
+      assertEquals(result2, expectedProjectsResponse)
 
       // clean up cache timeout
-      await time.delay(1000);
-    });
-  });
+      await time.delay(1000)
+    })
+  })
 
-  describe("fetching single project", () => {
-    it("correctly retrieves a project by ID", async () => {
-      fetchStub = stubFetchByUrlPrefix(validApiResponses);
+  describe('fetching single project', () => {
+    it('correctly retrieves a project by ID', async () => {
+      fetchStub = stubFetchByUrlPrefix(validApiResponses)
 
-      const graphQLServer = createGraphQLServer(noCacheServerConfig);
-      const result = await queryProject(graphQLServer);
+      const graphQLServer = createGraphQLServer(noCacheServerConfig)
+      const result = await queryProject(graphQLServer)
 
-      assertEquals(result, expectedResult);
-    });
+      assertEquals(result, expectedResult)
+    })
 
-    it("correctly extracts language from locale", async () => {
-      fetchStub = stubFetchByUrlPrefix(validApiResponses);
+    it('correctly extracts language from locale', async () => {
+      fetchStub = stubFetchByUrlPrefix(validApiResponses)
 
-      const graphQLServer = createGraphQLServer(noCacheServerConfig);
+      const graphQLServer = createGraphQLServer(noCacheServerConfig)
       const result = await queryProject(graphQLServer, {
-        "accept-language": "de-DE",
-      });
+        'accept-language': 'de-DE',
+      })
 
-      assertEquals(result, expectedResult);
-      const expectedUrl =
-        "https://api.betterplace.org/de/api_v4/projects/1.json";
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+      assertEquals(result, expectedResult)
+      const expectedUrl = 'https://api.betterplace.org/de/api_v4/projects/1.json'
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("uses correct language as default if requested language is not supported", async () => {
-      fetchStub = stubFetchByUrlPrefix(validApiResponses);
+    it('uses correct language as default if requested language is not supported', async () => {
+      fetchStub = stubFetchByUrlPrefix(validApiResponses)
 
-      const graphQLServer = createGraphQLServer(noCacheServerConfig);
+      const graphQLServer = createGraphQLServer(noCacheServerConfig)
       const result = await queryProject(graphQLServer, {
-        "accept-language": "es",
-      });
+        'accept-language': 'es',
+      })
 
-      assertEquals(result, expectedResult);
-      const expectedUrl =
-        "https://api.betterplace.org/en/api_v4/projects/1.json";
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+      assertEquals(result, expectedResult)
+      const expectedUrl = 'https://api.betterplace.org/en/api_v4/projects/1.json'
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("calls api with correct parameters for fetching a project by ID", async () => {
-      fetchStub = stubFetch(apiProject1);
+    it('calls api with correct parameters for fetching a project by ID', async () => {
+      fetchStub = stubFetch(apiProject1)
 
-      await fetchProject({ id: 1 }, "de");
+      await fetchProject({ id: 1 }, 'de')
 
-      const expectedUrl =
-        "https://api.betterplace.org/de/api_v4/projects/1.json";
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+      const expectedUrl = 'https://api.betterplace.org/de/api_v4/projects/1.json'
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("uses default locale if missing for fetching a project by ID", async () => {
-      fetchStub = stubFetch(apiProject1);
+    it('uses default locale if missing for fetching a project by ID', async () => {
+      fetchStub = stubFetch(apiProject1)
 
-      await fetchProject({ id: 1 });
+      await fetchProject({ id: 1 })
 
-      const expectedUrl =
-        "https://api.betterplace.org/en/api_v4/projects/1.json";
-      assertSpyCall(fetchStub, 0, { args: [expectedUrl] });
-    });
+      const expectedUrl = 'https://api.betterplace.org/en/api_v4/projects/1.json'
+      assertSpyCall(fetchStub, 0, { args: [expectedUrl] })
+    })
 
-    it("throws error for invalid project response", async () => {
+    it('throws error for invalid project response', async () => {
       fetchStub = stub(
         globalThis,
-        "fetch",
-        returnsNext([Promise.resolve(new Response("foobar"))]),
-      );
+        'fetch',
+        returnsNext([Promise.resolve(new Response('foobar'))]),
+      )
 
-      await assertRejects(() => fetchProject({ id: 123 }));
-    });
+      await assertRejects(() => fetchProject({ id: 123 }))
+    })
 
-    it("throws NOT_FOUND error for 404 response", async () => {
+    it('throws NOT_FOUND error for 404 response', async () => {
       fetchStub = stub(
         globalThis,
-        "fetch",
+        'fetch',
         returnsNext([Promise.resolve({ status: 404 } as Response)]),
-      );
+      )
 
       await assertRejects(
         () => fetchProject({ id: 123 }),
         GraphQLError,
-        "Not found",
-      );
-    });
-  });
-});
+        'Not found',
+      )
+    })
+  })
+})
