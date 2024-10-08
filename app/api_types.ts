@@ -1,77 +1,77 @@
-export type ApiProjectId = number;
+export type ApiProjectId = number
 
 export type ApiLink = {
-  href: string;
-  rel: string;
-};
+  href: string
+  rel: string
+}
 
 export type ApiPicture = {
-  links: Array<ApiLink>;
-};
+  links: Array<ApiLink>
+}
 
 export type ApiCarrier = {
-  id: number;
-  name: string;
-  city: string | undefined | null;
-  country: string | undefined | null;
-  links: Array<ApiLink>;
-  picture: ApiPicture;
-};
+  id: number
+  name: string
+  city: string | undefined | null
+  country: string | undefined | null
+  links: Array<ApiLink>
+  picture: ApiPicture
+}
 
 /** only covers the parts of the API response type that were using */
 export type ApiProject = {
-  id: ApiProjectId;
-  title: string;
-  city: string | undefined | null;
-  country: string | undefined | null;
-  links: Array<ApiLink>;
-  carrier: ApiCarrier;
-  donations_count: number;
-  progress_percentage: number;
-  open_amount_in_cents: number;
-  profile_picture: ApiPicture | undefined;
-  summary: string | undefined | null;
-  description: string | undefined | null;
-  blog_post_count: number;
-};
+  id: ApiProjectId
+  title: string
+  city: string | undefined | null
+  country: string | undefined | null
+  links: Array<ApiLink>
+  carrier: ApiCarrier
+  donations_count: number
+  progress_percentage: number
+  open_amount_in_cents: number
+  profile_picture: ApiPicture | undefined
+  summary: string | undefined | null
+  description: string | undefined | null
+  blog_post_count: number
+}
 
 /** only covers the parts of the API response type that were using */
 export type ApiProjectsResponse = {
-  total_entries: number;
-  offset: number;
-  data: Array<ApiProject>;
-};
+  total_entries: number
+  offset: number
+  data: Array<ApiProject>
+}
 
-export type ApiProjectCategorySlug = string;
+export type ApiProjectCategorySlug = string
 
 export type ApiProjectCategory = {
-  created_at: string; // ISO datetime
-  id: number;
-  links: Array<ApiLink>;
-  name: string;
-  slug: ApiProjectCategorySlug;
-  updated_at: string; // ISO datetime
-};
+  created_at: string // ISO datetime
+  id: number
+  links: Array<ApiLink>
+  name: string
+  slug: ApiProjectCategorySlug
+  updated_at: string // ISO datetime
+}
 
 type ApiAuthor = {
-  name: string;
-  picture: ApiPicture;
-};
+  name: string
+  picture: ApiPicture
+}
 
 export type ApiBlogPost = {
-  id: number;
-  title: string;
-  published_at: string;
-  author?: ApiAuthor;
-  body: string;
-  links: Array<ApiLink>;
-};
+  id: number
+  title: string
+  published_at: string
+  author?: ApiAuthor
+  body: string
+  links: Array<ApiLink>
+}
 
 export type ApiBlogPostResponse = {
-  total_entries: number;
-  data: ApiBlogPost[];
-};
+  total_entries: number
+  data: ApiBlogPost[]
+}
 
 export type ApiOrganisation = {
-  links: Array<ApiLink>;
-};
+  links: Array<ApiLink>
+}
