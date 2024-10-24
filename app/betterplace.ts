@@ -149,7 +149,8 @@ export const fetchCategories = async (projectId: number): Promise<string[]> => {
     const json = await response.json()
     const categories = json.data as Array<ApiProjectCategory>
     return categories.map(transformProjectCategory)
-  } catch (e) {
+    // deno-lint-ignore no-explicit-any
+  } catch (e: any) {
     logger.warn(
       `Error while fetching project categories from '${href}', using empty array to handle this (somewhat) gracefully`,
       e,
@@ -171,7 +172,8 @@ export const fetchNews = async (
     const json = await response.json()
     const news = json.data as ApiBlogPost[]
     return news.map(transformNews)
-  } catch (e) {
+    // deno-lint-ignore no-explicit-any
+  } catch (e: any) {
     logger.warn(
       `Error while fetching blog posts from '${href}', using empty array to handle this (somewhat) gracefully`,
       e,
@@ -190,7 +192,8 @@ export const fetchInitiativeUrl = async (
     const response = await fetch(initiative.url)
     const organisation: ApiOrganisation = await response.json()
     return organisation.links.find((l) => l.rel === 'platform')?.href
-  } catch (e) {
+    // deno-lint-ignore no-explicit-any
+  } catch (e: any) {
     logger.warn(
       `Error while fetching organisation url from '${initiative.url}', using api url to handle this (somewhat) gracefully`,
       e,
@@ -239,7 +242,8 @@ const fetchPageOfProjects = async (
     const fetchResponse = await fetch(url)
     const jsonResponse = await fetchResponse.json()
     return transformProjectsResponse(jsonResponse)
-  } catch (e) {
+    // deno-lint-ignore no-explicit-any
+  } catch (e: any) {
     logger.error(
       `Error performing request to ${url}: ${e.message}`,
     )
@@ -297,7 +301,8 @@ export const fetchProject = async (
     }
     const json = await response.json()
     return transformProject(json)
-  } catch (e) {
+    // deno-lint-ignore no-explicit-any
+  } catch (e: any) {
     if (e.extensions?.code !== ERROR_CODE_NOT_FOUND) {
       logger.error(
         `Error performing request to ${url}: ${e.message}`,
