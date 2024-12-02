@@ -163,6 +163,8 @@ const getLanguage = (headers?: Headers) => {
     DEFAULT_LANGUAGE) as BetterPlaceLanguage
 }
 
+const isAlive = () => new Response(`${true}`)
+
 export const createGraphQLServer = (config: ServerConfig): GraphQLServer => {
   const plugins = config.cacheEnabled
     ? [
@@ -200,15 +202,21 @@ type GraphQLContext = {
 
 export const startServer = (config: ServerConfig): Promise<void> => {
   const graphQLServer: GraphQLServer = createGraphQLServer(config)
-  return serve(graphQLServer, {
+  return serve({
     port: config.port,
+    handler: (req: Request) => {
+      const url = new URL(req.url)
+      const pathname = url.pathname
+      if (pathname.startsWith('/health') || pathname.startsWith('/ready')) return isAlive()
+      return graphQLServer.handleRequest(req)
+    },
     onListen({ port, hostname }) {
       logger.info(
         `Server started at http://${hostname === '0.0.0.0' ? 'localhost' : hostname}:${port}/graphql`,
       )
       if (config.fake) {
         logger.info(
-          `Server is serving fake data due to FAKE env var set to true`,
+          'Server is serving fake data due to FAKE env var set to true',
         )
       }
     },

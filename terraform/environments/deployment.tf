@@ -44,6 +44,21 @@ resource "google_cloud_run_service" "donations_api" {
         ports {
           container_port = 8001
         }
+        startup_probe {
+          http_get {
+            path = "/ready"
+          }
+          timeout_seconds   = 10
+          period_seconds    = 10
+          failure_threshold = 6
+        }
+        liveness_probe {
+          http_get {
+            path = "/health"
+          }
+          timeout_seconds = 20
+          period_seconds  = 60
+        }
         env {
           name  = "ENVIRONMENT"
           value = local.environment
