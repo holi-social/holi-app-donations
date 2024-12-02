@@ -17,7 +17,7 @@ import {
   fetchProjects,
   SUPPORTED_LANGUAGES,
 } from './betterplace.ts'
-import { createSchema, createYoga, serve, useResponseCache } from './deps.ts'
+import { createSchema, createYoga, useResponseCache } from './deps.ts'
 import { logger } from './logging.ts'
 
 const typeDefs = `
@@ -200,9 +200,9 @@ type GraphQLContext = {
   }
 }
 
-export const startServer = (config: ServerConfig): Promise<void> => {
+export const startServer = (config: ServerConfig): Deno.HttpServer<Deno.NetAddr> => {
   const graphQLServer: GraphQLServer = createGraphQLServer(config)
-  return serve({
+  return Deno.serve({
     port: config.port,
     handler: (req: Request) => {
       const url = new URL(req.url)
